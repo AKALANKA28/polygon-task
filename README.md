@@ -1,56 +1,171 @@
-# Welcome to your Expo app 👋
+# 🔷 Polygon Task
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+A production-grade React Native task management application built for **Polygon**. Features role-based access (Admin/Employee), full CRUD task management, beautiful animations, and a premium design system.
 
-## Get started
+## 📱 Screenshots
 
-1. Install dependencies
+| Login | Admin Dashboard | Task List | Employee View |
+|-------|----------------|-----------|---------------|
+| _Gradient login with form validation_ | _Animated stats + recent tasks_ | _Search, filter, FlashList_ | _Status updates with haptics_ |
 
-   ```bash
-   npm install
-   ```
+## 🛠 Tech Stack
 
-2. Start the app
+### Mobile (Frontend)
+| Package | Version |
+|---------|---------|
+| Expo SDK | ~55.0.0 |
+| React Native | 0.83.x |
+| TypeScript | ^5.9.0 |
+| NativeWind | ^4.0.1 |
+| TailwindCSS | ^3.4.0 |
+| Redux Toolkit | ^2.2.0 |
+| React Redux | ^9.1.0 |
+| Expo Router | ~55.0.0 |
+| React Native Reanimated | ^4.2.0 |
+| Axios | ^1.7.0 |
+| React Hook Form + Zod | Latest |
+| date-fns | ^3.6.0 |
+| FlashList | ^1.6.4 |
 
-   ```bash
-   npx expo start
-   ```
+### Backend
+| Package | Version |
+|---------|---------|
+| Node.js | ^20.x |
+| Express | ^4.19.0 |
+| MySQL2 | ^3.9.0 |
+| JWT | ^9.0.0 |
+| bcryptjs | ^2.4.3 |
 
-In the output, you'll find options to open the app in a
+## 📋 Prerequisites
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+- **Node.js** >= 20.x
+- **Expo CLI** (`npm install -g expo-cli`)
+- **MySQL** >= 8.0
+- **Android Studio** (for Android emulator) or **Xcode** (for iOS simulator)
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+## 🚀 Installation
 
-## Get a fresh project
-
-When you're ready, run:
-
+### 1. Clone the repository
 ```bash
-npm run reset-project
+git clone <repository-url>
+cd polygon-task
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+### 2. Install frontend dependencies
+```bash
+npm install
+```
 
-### Other setup steps
+### 3. Install backend dependencies
+```bash
+cd backend
+npm install
+cd ..
+```
 
-- To set up ESLint for linting, run `npx expo lint`, or follow our guide on ["Using ESLint and Prettier"](https://docs.expo.dev/guides/using-eslint/)
-- If you'd like to set up unit testing, follow our guide on ["Unit Testing with Jest"](https://docs.expo.dev/develop/unit-testing/)
-- Learn more about the TypeScript setup in this template in our guide on ["Using TypeScript"](https://docs.expo.dev/guides/typescript/)
+### 4. Configure environment variables
 
-## Learn more
+**Mobile** — Create `.env` in project root:
+```env
+EXPO_PUBLIC_API_URL=http://YOUR_LOCAL_IP:3000/api
+```
 
-To learn more about developing your project with Expo, look at the following resources:
+**Backend** — Copy and edit:
+```bash
+cp backend/.env.example backend/.env
+```
+```env
+PORT=3000
+DB_HOST=localhost
+DB_USER=root
+DB_PASSWORD=yourpassword
+DB_NAME=polygon_tasks
+JWT_SECRET=your-super-secret-jwt-key-here
+JWT_EXPIRES_IN=7d
+```
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+## 🗄 Database Setup
 
-## Join the community
+1. Start MySQL server
+2. Run the schema:
+```bash
+mysql -u root -p < database/schema.sql
+```
+3. This creates the `polygon_tasks` database with seed data
 
-Join our community of developers creating universal apps.
+### Demo Credentials
+| Role | Email | Password |
+|------|-------|----------|
+| Admin | admin@polygon.com | password123 |
+| Employee | jane@polygon.com | password123 |
+| Employee | john@polygon.com | password123 |
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+## ▶️ Running the App
+
+### Start the backend
+```bash
+cd backend
+npm run dev
+```
+
+### Start the mobile app
+```bash
+npm start
+```
+
+Then press `a` for Android or `i` for iOS.
+
+## 📦 Building APK
+
+```bash
+npx eas build --platform android --profile preview
+```
+
+## 🎨 Design System
+
+The app uses a comprehensive design token system:
+- **Colors**: Polygon brand palette (magenta, purple, red, orange, amber)
+- **Typography**: Poppins font family (5 weights)
+- **Spacing**: 4px-based scale
+- **Shadows**: Brand-colored elevation system
+- **Animations**: Reanimated v3 spring/timing animations
+
+## ✅ Features
+
+- [x] JWT login/logout with AsyncStorage session persistence
+- [x] Role-based routing (Admin/Employee)
+- [x] Admin: Create, view, edit, delete tasks
+- [x] Admin: Assign tasks to specific employees
+- [x] Admin: Employee progress dashboard with visual progress bars
+- [x] Employee: View assigned tasks
+- [x] Employee: Update task status with haptic feedback
+- [x] Employee: Profile management
+- [x] Real-time search with debounce
+- [x] Status + priority filtering
+- [x] Pull-to-refresh on all lists
+- [x] Animated stat cards with count-up
+- [x] Skeleton loading states
+- [x] Empty states with illustrations
+- [x] Toast notifications
+- [x] Form validation (Zod + React Hook Form)
+- [x] Keyboard avoiding on all form screens
+- [x] Safe area insets on all screens
+
+## 📝 Git History
+
+```
+feat(init): scaffold project structure with Expo Router, Redux, NativeWind
+feat(db): add MySQL schema, seed data, and backend Express setup
+feat(auth): implement JWT login/logout with AsyncStorage session persistence
+feat(admin-tasks): add full task CRUD API routes and admin task screens
+feat(employee): implement employee task view and status update flow
+feat(ui): build design system — Button, Card, Badge, Input, EmptyState components
+feat(animations): add Reanimated transitions, count-up stats, skeleton loading
+feat(search-filter): implement task search and status/priority filtering
+feat(profile): complete employee profile edit screen and admin employee list
+chore(build): finalize README documentation
+```
+
+## 📄 License
+
+Private — Polygon Internal Use Only
