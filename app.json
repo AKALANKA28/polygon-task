@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "polygon-task",
+    "name": "Polygon Task",
     "slug": "polygon-task",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -8,16 +8,15 @@
     "scheme": "polygontask",
     "userInterfaceStyle": "automatic",
     "ios": {
-      "icon": "./assets/expo.icon"
+      "supportsTablet": true,
+      "bundleIdentifier": "com.polygon.task"
     },
     "android": {
       "adaptiveIcon": {
-        "backgroundColor": "#E6F4FE",
-        "foregroundImage": "./assets/images/android-icon-foreground.png",
-        "backgroundImage": "./assets/images/android-icon-background.png",
-        "monochromeImage": "./assets/images/android-icon-monochrome.png"
+        "foregroundImage": "./assets/images/icon.png",
+        "backgroundColor": "#0D0D14"
       },
-      "predictiveBackGestureEnabled": false
+      "package": "com.polygon.task"
     },
     "web": {
       "output": "static",
@@ -28,17 +27,18 @@
       [
         "expo-splash-screen",
         {
-          "backgroundColor": "#208AEF",
-          "android": {
-            "image": "./assets/images/splash-icon.png",
-            "imageWidth": 76
-          }
+          "backgroundColor": "#0D0D14"
         }
-      ]
+      ],
+      "expo-font"
     ],
     "experiments": {
-      "typedRoutes": true,
-      "reactCompiler": true
+      "typedRoutes": true
+    },
+    "extra": {
+      "router": {
+        "origin": false
+      }
     }
   }
 }
