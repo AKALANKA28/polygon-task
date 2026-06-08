@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   RefreshControl,
   Dimensions,
+  Alert,
 } from 'react-native';
 import Animated, {
   useSharedValue,
@@ -28,6 +29,7 @@ import TaskCard from '../../src/components/task/TaskCard';
 import Skeleton from '../../src/components/ui/Skeleton';
 import { useAppDispatch, useAppSelector } from '../../src/store/hooks';
 import { fetchTasks, fetchTaskStats } from '../../src/store/slices/tasksSlice';
+import { logout } from '../../src/store/slices/authSlice';
 import { colors } from '../../src/theme/colors';
 import { typography } from '../../src/theme/typography';
 import { spacing, radius, shadows } from '../../src/theme/spacing';
@@ -113,6 +115,24 @@ export default function AdminDashboard() {
   // FAB animation
   const fabTranslateY = useSharedValue(80);
 
+  const handleLogout = useCallback(() => {
+    Alert.alert(
+      'Sign Out',
+      'Are you sure you want to sign out?',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Sign Out',
+          style: 'destructive',
+          onPress: async () => {
+            await dispatch(logout());
+            router.replace('/(auth)/login');
+          },
+        },
+      ]
+    );
+  }, [dispatch, router]);
+
   useEffect(() => {
     dispatch(fetchTasks());
     dispatch(fetchTaskStats());
@@ -164,7 +184,9 @@ export default function AdminDashboard() {
             </View>
           }
           rightContent={
-            <Avatar name={user?.name || 'Admin'} size={44} />
+            <TouchableOpacity onPress={handleLogout} activeOpacity={0.7}>
+              <Avatar name={user?.name || 'Admin'} size={44} />
+            </TouchableOpacity>
           }
         />
 
