@@ -16,6 +16,7 @@ import { fetchTasks, setSearchQuery, setFilterStatus, setFilterPriority, selectF
 import { colors } from '../../../src/theme/colors';
 import { spacing } from '../../../src/theme/spacing';
 import type { Task, TaskStatus, TaskPriority } from '../../../src/types/task.types';
+import { useTheme } from '../../../src/theme/ThemeContext';
 
 export default function AllTasksScreen() {
   const dispatch = useAppDispatch();
@@ -24,6 +25,9 @@ export default function AllTasksScreen() {
   const { isLoading, searchQuery, filterStatus, filterPriority } = useAppSelector((s) => s.tasks);
   const filteredTasks = useAppSelector(selectFilteredTasks);
   const [refreshing, setRefreshing] = useState(false);
+
+  const { isDark, themeColors } = useTheme();
+  const styles = getStyles(isDark, themeColors);
 
   useEffect(() => {
     dispatch(fetchTasks());
@@ -72,7 +76,7 @@ export default function AllTasksScreen() {
 
   return (
     <View style={styles.container}>
-      <GradientHeader title="All Tasks" height={120} />
+      <GradientHeader title="All Tasks" height={100} />
 
       <View style={styles.content}>
         <TaskSearchBar value={searchQuery} onChangeText={handleSearchChange} />
@@ -117,17 +121,19 @@ export default function AllTasksScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: colors.surface.background,
-  },
-  content: {
-    flex: 1,
-    paddingHorizontal: spacing.base,
-    paddingTop: spacing.base,
-  },
-  filterContainer: {
-    marginTop: spacing.md,
-  },
-});
+const getStyles = (isDark: boolean, themeColors: any) =>
+  StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: themeColors.background,
+    },
+    content: {
+      flex: 1,
+      paddingHorizontal: spacing.base,
+      paddingTop: spacing.xs,
+    },
+    filterContainer: {
+      marginTop: spacing.sm,
+      marginBottom: spacing.sm,
+    },
+  });

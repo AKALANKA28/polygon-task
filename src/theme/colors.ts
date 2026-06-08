@@ -19,38 +19,38 @@ export const colors = {
   // === TASK STATUS COLORS ===
   status: {
     pending: {
-      bg: '#FFF7E6',
-      text: '#B76E00',
-      dot: '#FFB800',
-      border: '#FFD166',
+      bg: '#FFF8EE',
+      text: '#C27803',
+      dot: '#F59E0B',
+      border: 'rgba(245, 158, 11, 0.15)',
     },
     inProgress: {
-      bg: '#FFF0F7',
-      text: '#A0005E',
-      dot: '#FF1F8E',
-      border: '#FF80C4',
+      bg: '#EEF6FF',
+      text: '#0284C7',
+      dot: '#38BDF8',
+      border: 'rgba(56, 189, 248, 0.15)',
     },
     completed: {
-      bg: '#F0F0FF',
-      text: '#5A00A8',
-      dot: '#8B1FCC',
-      border: '#C084FC',
+      bg: '#F8F2FF',
+      text: '#7C3AED',
+      dot: '#A855F7',
+      border: 'rgba(168, 85, 247, 0.15)',
     },
   },
 
   // === NEUTRALS ===
   neutral: {
-    50: '#FAFAFA',
-    100: '#F5F5F5',
-    200: '#E5E5E5',
-    300: '#D4D4D4',
-    400: '#A3A3A3',
-    500: '#737373',
-    600: '#525252',
-    700: '#404040',
-    800: '#262626',
-    900: '#171717',
-    950: '#0A0A0A',
+    50: '#FAF8F5',
+    100: '#F5F2EC',
+    200: '#EAE6DF',
+    300: '#D6D1C7',
+    400: '#A39E93',
+    500: '#736F65',
+    600: '#525048',
+    700: '#403E38',
+    800: '#262522',
+    900: '#171614',
+    950: '#0C0C0A',
   },
 
   // === SEMANTIC ===
@@ -63,18 +63,18 @@ export const colors = {
 
   // === SURFACE (Light Mode) ===
   surface: {
-    background: '#F8F7FF',
+    background: '#FAF7F2',
     card: '#FFFFFF',
-    overlay: 'rgba(139, 31, 204, 0.06)',
-    border: '#EDE9FE',
+    overlay: 'rgba(255, 122, 0, 0.06)',
+    border: '#EAE6DF',
   },
 
   // === SURFACE (Dark Mode) ===
   surfaceDark: {
-    background: '#0D0D14',
-    card: '#1A1A2E',
+    background: '#0F0F12',
+    card: '#17171C',
     overlay: 'rgba(255, 31, 142, 0.08)',
-    border: '#2D2D4A',
+    border: '#27272F',
   },
 
   white: '#FFFFFF',

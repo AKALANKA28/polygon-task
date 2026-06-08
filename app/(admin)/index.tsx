@@ -175,20 +175,19 @@ export default function AdminDashboard() {
           />
         }
       >
-        {/* Gradient Header */}
+        {/* Compact Adaptive Header */}
         <GradientHeader
-          height={200}
+          height={120}
           leftContent={
             <View>
               <Text style={styles.greetingText}>{greeting}</Text>
               <Text style={styles.nameText}>{user?.name || 'Admin'}</Text>
-              <Text style={styles.headerSubtitle}>Manage your team's tasks</Text>
             </View>
           }
           rightContent={
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 14 }}>
               <TouchableOpacity onPress={toggleTheme} activeOpacity={0.7} style={styles.themeButton}>
-                <Svg width={20} height={20} viewBox="0 0 24 24" fill="none" stroke={colors.white} strokeWidth={2}>
+                <Svg width={20} height={20} viewBox="0 0 24 24" fill="none" stroke={themeColors.text} strokeWidth={2}>
                   {isDark ? (
                     <Path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42M12 7a5 5 0 100 10 5 5 0 000-10z" strokeLinecap="round" strokeLinejoin="round" />
                   ) : (
@@ -241,17 +240,12 @@ export default function AdminDashboard() {
         </View>
       </ScrollView>
 
-      {/* FAB */}
+      {/* FAB - Premium Rounded Square */}
       <Animated.View style={[styles.fab, fabStyle]}>
-        <TouchableOpacity onPress={() => router.push('/(admin)/tasks/create')} activeOpacity={0.8}>
-          <LinearGradient
-            colors={colors.primary.gradient as unknown as [string, string]}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 1 }}
-            style={styles.fabButton}
-          >
-            <Text style={styles.fabIcon}>+</Text>
-          </LinearGradient>
+        <TouchableOpacity onPress={() => router.push('/(admin)/tasks/create')} activeOpacity={0.9}>
+          <View style={[styles.fabButton, { backgroundColor: isDark ? colors.white : colors.neutral[900] }]}>
+            <Text style={[styles.fabIcon, { color: isDark ? colors.black : colors.white }]}>+</Text>
+          </View>
         </TouchableOpacity>
       </Animated.View>
     </View>
@@ -293,24 +287,18 @@ const getStyles = (isDark: boolean, themeColors: any) => StyleSheet.create({
   },
   content: {
     paddingHorizontal: spacing.base,
-    marginTop: spacing.base,
+    marginTop: spacing.xs,
   },
   greetingText: {
     fontFamily: typography.fonts.regular,
     fontSize: typography.sizes.base,
-    color: colors.white,
+    color: themeColors.textSecondary,
   },
   nameText: {
     fontFamily: typography.fonts.bold,
     fontSize: 22,
-    color: colors.white,
+    color: themeColors.text,
     marginTop: 2,
-  },
-  headerSubtitle: {
-    fontFamily: typography.fonts.regular,
-    fontSize: typography.sizes.sm + 1,
-    color: 'rgba(255,255,255,0.7)',
-    marginTop: spacing.xs,
   },
   themeButton: {
     padding: spacing.xs,
@@ -343,20 +331,24 @@ const getStyles = (isDark: boolean, themeColors: any) => StyleSheet.create({
   },
   fab: {
     position: 'absolute',
-    bottom: 80,
+    bottom: 30,
     right: 24,
     ...shadows.lg,
   },
   fabButton: {
     width: 56,
     height: 56,
-    borderRadius: 28,
+    borderRadius: 18,
     alignItems: 'center',
     justifyContent: 'center',
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 8,
+    elevation: 4,
   },
   fabIcon: {
     fontSize: 28,
-    color: colors.white,
     fontWeight: 'bold',
     marginTop: -2,
   },

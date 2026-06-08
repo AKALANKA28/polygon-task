@@ -3,6 +3,7 @@ import { View, StyleSheet } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
 import { colors } from '../../src/theme/colors';
 import { typography } from '../../src/theme/typography';
+import { useTheme } from '../../src/theme/ThemeContext';
 
 const TabIcon = ({ name, color, focused }: { name: string; color: string; focused: boolean }) => {
   const icons: Record<string, string> = {
@@ -12,8 +13,7 @@ const TabIcon = ({ name, color, focused }: { name: string; color: string; focuse
   };
 
   return (
-    <View style={{ alignItems: 'center' }}>
-      {focused && <View style={[tabStyles.indicator, { backgroundColor: colors.primary.DEFAULT }]} />}
+    <View style={{ alignItems: 'center', justifyContent: 'center' }}>
       <Svg width={22} height={22} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth={focused ? 2.2 : 1.8}>
         <Path d={icons[name]} strokeLinecap="round" strokeLinejoin="round" />
       </Svg>
@@ -22,23 +22,25 @@ const TabIcon = ({ name, color, focused }: { name: string; color: string; focuse
 };
 
 export default function AdminLayout() {
+  const { isDark, themeColors } = useTheme();
+
   return (
     <Tabs
       screenOptions={{
         headerShown: false,
-        tabBarActiveTintColor: colors.primary.DEFAULT,
-        tabBarInactiveTintColor: colors.neutral[400],
+        tabBarActiveTintColor: isDark ? colors.white : colors.neutral[900],
+        tabBarInactiveTintColor: isDark ? colors.neutral[600] : colors.neutral[400],
         tabBarLabelStyle: {
           fontFamily: typography.fonts.medium,
           fontSize: 11,
+          marginTop: -2,
         },
         tabBarStyle: {
-          backgroundColor: colors.white,
-          borderTopColor: 'rgba(139,31,204,0.08)',
-          elevation: 8,
-          height: 60,
+          backgroundColor: themeColors.card,
+          borderTopColor: themeColors.border,
+          height: 64,
           paddingBottom: 8,
-          paddingTop: 4,
+          paddingTop: 8,
         },
       }}
     >
@@ -66,13 +68,3 @@ export default function AdminLayout() {
     </Tabs>
   );
 }
-
-const tabStyles = StyleSheet.create({
-  indicator: {
-    position: 'absolute',
-    top: -4,
-    width: 20,
-    height: 3,
-    borderRadius: 1.5,
-  },
-});

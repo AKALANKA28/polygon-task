@@ -22,7 +22,7 @@ import { typography } from '../../src/theme/typography';
 import { spacing, radius } from '../../src/theme/spacing';
 import { isDueToday } from '../../src/utils/formatters';
 import type { Task, TaskStatus, TaskPriority } from '../../src/types/task.types';
-
+import Svg, { Path } from 'react-native-svg';
 import { useTheme } from '../../src/theme/ThemeContext';
 
 const StatChip: React.FC<{ count: number; label: string; color: string; isDark: boolean; themeColors: any }> = React.memo(({ count, label, color, isDark, themeColors }) => (
@@ -31,9 +31,9 @@ const StatChip: React.FC<{ count: number; label: string; color: string; isDark: 
     style={[
       statStyles.chip,
       {
-        borderColor: color + '40',
+        borderColor: themeColors.border,
         backgroundColor: themeColors.card,
-        borderWidth: isDark ? 1 : 0.5,
+        borderWidth: 1.2,
       }
     ]}
   >
@@ -93,10 +93,13 @@ export default function EmployeeDashboard() {
         }
       >
         <GradientHeader
-          height={180}
+          height={90}
           leftContent={
-            <View>
-              <Text style={styles.headerTitle}>My Tasks</Text>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.sm }}>
+              <Svg width={26} height={26} viewBox="0 0 24 24" fill="none">
+                <Path d="M12 2l8.66 5v10L12 22l-8.66-5V7L12 2z" fill={colors.brand.magenta} />
+              </Svg>
+              <Text style={styles.headerTitle}>Polygon Task</Text>
             </View>
           }
           rightContent={<Avatar name={user?.name || 'User'} size={44} />}
@@ -115,8 +118,8 @@ export default function EmployeeDashboard() {
             <View style={styles.section}>
               <View style={styles.sectionHeader}>
                 <Text style={styles.sectionTitle}>Due Today</Text>
-                <View style={styles.todayChip}>
-                  <Text style={styles.todayText}>
+                <View style={[styles.todayChip, { backgroundColor: isDark ? colors.white : colors.neutral[900] }]}>
+                  <Text style={[styles.todayText, { color: isDark ? colors.black : colors.white }]}>
                     {new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
                   </Text>
                 </View>
@@ -163,7 +166,7 @@ const statStyles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     paddingVertical: spacing.md,
-    borderRadius: radius.md,
+    borderRadius: radius.lg,
   },
   chipCount: {
     fontFamily: typography.fonts.bold,
@@ -183,8 +186,8 @@ const getStyles = (isDark: boolean, themeColors: any) => StyleSheet.create({
   },
   headerTitle: {
     fontFamily: typography.fonts.bold,
-    fontSize: typography.sizes['2xl'],
-    color: colors.white,
+    fontSize: typography.sizes.xl,
+    color: themeColors.text,
   },
   content: {
     paddingHorizontal: spacing.base,
@@ -192,7 +195,7 @@ const getStyles = (isDark: boolean, themeColors: any) => StyleSheet.create({
   statsRow: {
     flexDirection: 'row',
     gap: spacing.sm,
-    marginTop: spacing.base,
+    marginTop: spacing.xs,
     marginBottom: spacing.xl,
   },
   section: {
@@ -208,20 +211,19 @@ const getStyles = (isDark: boolean, themeColors: any) => StyleSheet.create({
     fontFamily: typography.fonts.semiBold,
     fontSize: typography.sizes.lg,
     color: themeColors.text,
-    marginBottom: spacing.md,
+    marginBottom: 0,
   },
   todayChip: {
-    backgroundColor: colors.primary.DEFAULT,
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.xs,
-    borderRadius: radius.full,
+    borderRadius: radius.md,
   },
   todayText: {
-    fontFamily: typography.fonts.medium,
+    fontFamily: typography.fonts.semiBold,
     fontSize: typography.sizes.sm,
-    color: colors.white,
   },
   filterContainer: {
     marginTop: spacing.md,
+    marginBottom: spacing.md,
   },
 });
