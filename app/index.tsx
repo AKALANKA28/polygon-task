@@ -1,21 +1,20 @@
-import React, { useEffect } from 'react';
-import { View, Text, StyleSheet, Dimensions } from 'react-native';
-import Animated, {
-  useSharedValue,
-  useAnimatedStyle,
-  withRepeat,
-  withTiming,
-  withSequence,
-  withDelay,
-  Easing,
-} from 'react-native-reanimated';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
-import { useAppSelector, useAppDispatch } from '../src/store/hooks';
-import { restoreSession } from '../src/store/slices/authSlice';
+import React, { useEffect } from 'react';
+import { Dimensions, Image, StyleSheet, View } from 'react-native';
+import Animated, {
+  Easing,
+  useAnimatedStyle,
+  useSharedValue,
+  withDelay,
+  withRepeat,
+  withSequence,
+  withTiming,
+} from 'react-native-reanimated';
+import { useAppDispatch, useAppSelector } from '../src/store/hooks';
 import { colors } from '../src/theme/colors';
-import { typography } from '../src/theme/typography';
 import { spacing } from '../src/theme/spacing';
+import { typography } from '../src/theme/typography';
 
 const { width } = Dimensions.get('window');
 
@@ -114,16 +113,13 @@ export default function SplashScreen() {
   return (
     <View style={styles.container}>
       {/* Logo placeholder — user will provide real logo */}
-      <Animated.View style={[styles.logoContainer, logoAnimStyle]}>
-        <LinearGradient
-          colors={['#FF1F8E', '#8B1FCC', '#FF6B1A', '#FFB800'] as unknown as [string, string, ...string[]]}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 1 }}
-          style={styles.logoPlaceholder}
-        >
-          <Text style={styles.logoText}>P</Text>
-        </LinearGradient>
-      </Animated.View>
+<Animated.View style={[styles.logoContainer, logoAnimStyle]}>
+  <Image
+    source={require('../assets/images/logo.png')}
+    style={{ width: 80, height: 80, borderRadius: 20 }}
+    resizeMode="contain"
+  />
+</Animated.View>
 
       <Animated.Text style={[styles.title, titleAnimStyle]}>Polygon Task</Animated.Text>
       <Animated.Text style={[styles.tagline, taglineAnimStyle]}>

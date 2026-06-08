@@ -1,37 +1,38 @@
+import { zodResolver } from '@hookform/resolvers/zod';
+import * as Haptics from 'expo-haptics';
+import { LinearGradient } from 'expo-linear-gradient';
+import { useRouter } from 'expo-router';
 import React, { useCallback, useEffect } from 'react';
+import { Controller, useForm } from 'react-hook-form';
 import {
-  View,
-  Text,
-  StyleSheet,
+  Dimensions,
+  Image,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
-  Dimensions,
+  StyleSheet,
+  Text,
+  View
 } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
 import Animated, {
-  useSharedValue,
-  useAnimatedStyle,
-  withTiming,
-  withSequence,
-  withRepeat,
-  FadeInUp,
   FadeInDown,
+  FadeInUp,
+  useAnimatedStyle,
+  useSharedValue,
+  withRepeat,
+  withSequence,
+  withTiming,
 } from 'react-native-reanimated';
-import { useForm, Controller } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import * as Haptics from 'expo-haptics';
-import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import Input from '../../src/components/ui/Input';
-import Button from '../../src/components/ui/Button';
-import { useAppDispatch, useAppSelector } from '../../src/store/hooks';
-import { login, clearError } from '../../src/store/slices/authSlice';
-import { loginSchema, LoginFormData } from '../../src/utils/validators';
-import { colors } from '../../src/theme/colors';
-import { typography } from '../../src/theme/typography';
-import { spacing, radius } from '../../src/theme/spacing';
 import Svg, { Path } from 'react-native-svg';
+import Button from '../../src/components/ui/Button';
+import Input from '../../src/components/ui/Input';
+import { useAppDispatch, useAppSelector } from '../../src/store/hooks';
+import { clearError, login } from '../../src/store/slices/authSlice';
+import { colors } from '../../src/theme/colors';
+import { radius, spacing } from '../../src/theme/spacing';
+import { typography } from '../../src/theme/typography';
+import { LoginFormData, loginSchema } from '../../src/utils/validators';
 
 const { height: screenHeight } = Dimensions.get('window');
 
@@ -119,14 +120,12 @@ export default function LoginScreen() {
           <Animated.View entering={FadeInDown.delay(200).duration(500)} style={styles.headerContent}>
             {/* Logo placeholder */}
             <View style={styles.logoContainer}>
-              <LinearGradient
-                colors={['rgba(255,255,255,0.25)', 'rgba(255,255,255,0.10)'] as unknown as [string, string]}
-                style={styles.logoGlow}
-              >
-                <Text style={styles.logoLetter}>P</Text>
-              </LinearGradient>
+              <Image
+                source={require('../../assets/images/logo.png')}
+                style={{ width: 80, height: 80, borderRadius: 20 }}
+                resizeMode="contain"
+              />
             </View>
-
             <Text style={styles.welcomeText}>Welcome Back</Text>
             <Text style={styles.subtitleText}>Sign in to your account</Text>
           </Animated.View>
