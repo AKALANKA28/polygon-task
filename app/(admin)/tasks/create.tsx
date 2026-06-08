@@ -27,7 +27,23 @@ import { toast } from '../../../src/utils/toast';
 import { colors } from '../../../src/theme/colors';
 import { typography } from '../../../src/theme/typography';
 import { spacing, radius } from '../../../src/theme/spacing';
+import { useTheme } from '../../../src/theme/ThemeContext';
 import type { Employee } from '../../../src/types/employee.types';
+
+const getPriorityColorsAdaptive = (priority: 'low' | 'medium' | 'high', isDark: boolean) => {
+  if (!isDark) {
+    return {
+      low: { bg: '#F0FDF4', text: '#166534' },
+      medium: { bg: '#FFFBEB', text: '#92400E' },
+      high: { bg: '#FFF1F2', text: '#9F1239' },
+    }[priority];
+  }
+  return {
+    low: { bg: 'rgba(22, 101, 52, 0.15)', text: '#4ADE80' },
+    medium: { bg: 'rgba(146, 64, 14, 0.15)', text: '#FBBF24' },
+    high: { bg: 'rgba(159, 18, 57, 0.15)', text: '#F87171' },
+  }[priority];
+};
 
 export default function CreateTaskScreen() {
   const dispatch = useAppDispatch();
@@ -36,6 +52,9 @@ export default function CreateTaskScreen() {
   const [showEmployeeModal, setShowEmployeeModal] = useState(false);
   const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const { isDark, themeColors } = useTheme();
+  const styles = getStyles(isDark, themeColors);
 
   const {
     control,
@@ -90,11 +109,18 @@ export default function CreateTaskScreen() {
     [setValue]
   );
 
-  const priorities: Array<{ value: 'low' | 'medium' | 'high'; label: string; colors: { bg: string; text: string } }> = [
-    { value: 'low', label: 'Low', colors: { bg: '#F0FDF4', text: '#166534' } },
-    { value: 'medium', label: 'Medium', colors: { bg: '#FFFBEB', text: '#92400E' } },
-    { value: 'high', label: 'High', colors: { bg: '#FFF1F2', text: '#9F1239' } },
-  ];
+  const getPriorityStyle = (pVal: 'low' | 'medium' | 'high', currentVal: 'low' | 'medium' | 'high') => {
+    const isSelected = pVal === currentVal;
+    if (isSelected) {
+      const pColors = getPriorityColorsAdaptive(pVal, isDark);
+      return { backgroundColor: pColors.bg, borderColor: pColors.text, text: pColors.text };
+    }
+    return {
+      backgroundColor: isDark ? colors.neutral[900] : colors.neutral[100],
+      borderColor: isDark ? colors.neutral[800] : colors.neutral[200],
+      text: isDark ? colors.neutral[400] : colors.neutral[500],
+    };
+  };
 
   return (
     <KeyboardAvoidingView
@@ -159,27 +185,28 @@ export default function CreateTaskScreen() {
           name="priority"
           render={({ field: { onChange, value } }) => (
             <View style={styles.priorityRow}>
-              {priorities.map((p) => (
-                <TouchableOpacity
-                  key={p.value}
-                  style={[
-                    styles.priorityPill,
-                    value === p.value
-                      ? { backgroundColor: p.colors.bg, borderColor: p.colors.text }
-                      : { backgroundColor: colors.neutral[100], borderColor: colors.neutral[200] },
-                  ]}
-                  onPress={() => onChange(p.value)}
-                >
-                  <Text
+              {(['low', 'medium', 'high'] as const).map((pVal) => {
+                const styleObj = getPriorityStyle(pVal, value);
+                return (
+                  <TouchableOpacity
+                    key={pVal}
                     style={[
-                      styles.priorityText,
-                      { color: value === p.value ? p.colors.text : colors.neutral[500] },
+                      styles.priorityPill,
+                      { backgroundColor: styleObj.backgroundColor, borderColor: styleObj.borderColor },
                     ]}
+                    onPress={() => onChange(pVal)}
                   >
-                    {p.label}
-                  </Text>
-                </TouchableOpacity>
-              ))}
+                    <Text
+                      style={[
+                        styles.priorityText,
+                        { color: styleObj.text },
+                      ]}
+                    >
+                      {pVal.charAt(0).toUpperCase() + pVal.slice(1)}
+                    </Text>
+                  </TouchableOpacity>
+                );
+              })}
             </View>
           )}
         />
@@ -199,7 +226,7 @@ export default function CreateTaskScreen() {
           ) : (
             <Text style={styles.selectPlaceholder}>Select an employee</Text>
           )}
-          <Svg width={16} height={16} viewBox="0 0 24 24" fill="none" stroke={colors.neutral[400]} strokeWidth={2}>
+          <Svg width={16} height={16} viewBox="0 0 24 24" fill="none" stroke={isDark ? colors.neutral[500] : colors.neutral[400]} strokeWidth={2}>
             <Path d="M19 9l-7 7-7-7" strokeLinecap="round" strokeLinejoin="round" />
           </Svg>
         </TouchableOpacity>
@@ -221,7 +248,7 @@ export default function CreateTaskScreen() {
             <View style={styles.modalHeader}>
               <Text style={styles.modalTitle}>Select Employee</Text>
               <TouchableOpacity onPress={() => setShowEmployeeModal(false)}>
-                <Svg width={24} height={24} viewBox="0 0 24 24" fill="none" stroke={colors.neutral[600]} strokeWidth={2}>
+                <Svg width={24} height={24} viewBox="0 0 24 24" fill="none" stroke={isDark ? colors.neutral[400] : colors.neutral[600]} strokeWidth={2}>
                   <Path d="M6 18L18 6M6 6l12 12" strokeLinecap="round" strokeLinejoin="round" />
                 </Svg>
               </TouchableOpacity>
@@ -255,144 +282,145 @@ export default function CreateTaskScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: colors.surface.background,
-  },
-  headerRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  backButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.xs,
-  },
-  backText: {
-    fontFamily: typography.fonts.medium,
-    fontSize: typography.sizes.base,
-    color: colors.white,
-  },
-  headerTitle: {
-    fontFamily: typography.fonts.bold,
-    fontSize: typography.sizes['2xl'],
-    color: colors.white,
-    marginTop: spacing.sm,
-  },
-  form: {
-    flex: 1,
-  },
-  formContent: {
-    padding: spacing.xl,
-    paddingBottom: spacing['4xl'],
-  },
-  label: {
-    fontFamily: typography.fonts.medium,
-    fontSize: typography.sizes.sm + 1,
-    color: colors.neutral[700],
-    marginBottom: spacing.sm,
-  },
-  priorityRow: {
-    flexDirection: 'row',
-    gap: spacing.sm,
-    marginBottom: spacing.base,
-  },
-  priorityPill: {
-    flex: 1,
-    height: 44,
-    borderRadius: radius.md,
-    borderWidth: 1.5,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  priorityText: {
-    fontFamily: typography.fonts.semiBold,
-    fontSize: typography.sizes.base,
-  },
-  selectField: {
-    height: 52,
-    borderRadius: radius.md,
-    borderWidth: 1.5,
-    borderColor: colors.surface.border,
-    backgroundColor: colors.white,
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: spacing.base,
-    justifyContent: 'space-between',
-    marginBottom: spacing.base,
-  },
-  selectFieldError: {
-    borderColor: colors.semantic.error,
-  },
-  selectPlaceholder: {
-    fontFamily: typography.fonts.regular,
-    fontSize: typography.sizes.base,
-    color: colors.neutral[400],
-  },
-  selectedEmployee: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.sm,
-  },
-  selectedEmployeeName: {
-    fontFamily: typography.fonts.medium,
-    fontSize: typography.sizes.base,
-    color: colors.neutral[900],
-  },
-  errorText: {
-    fontFamily: typography.fonts.medium,
-    fontSize: typography.sizes.sm,
-    color: colors.semantic.error,
-    marginTop: -spacing.sm,
-    marginBottom: spacing.md,
-  },
-  submitContainer: {
-    marginTop: spacing.lg,
-  },
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.5)',
-    justifyContent: 'flex-end',
-  },
-  modalContent: {
-    backgroundColor: colors.white,
-    borderTopLeftRadius: radius['2xl'],
-    borderTopRightRadius: radius['2xl'],
-    maxHeight: '70%',
-    paddingTop: spacing.xl,
-    paddingHorizontal: spacing.xl,
-  },
-  modalHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: spacing.lg,
-  },
-  modalTitle: {
-    fontFamily: typography.fonts.semiBold,
-    fontSize: typography.sizes.lg,
-    color: colors.neutral[900],
-  },
-  employeeRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: spacing.md,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.surface.border,
-    gap: spacing.md,
-  },
-  employeeInfo: {
-    flex: 1,
-  },
-  employeeName: {
-    fontFamily: typography.fonts.medium,
-    fontSize: typography.sizes.base,
-    color: colors.neutral[900],
-  },
-  employeeEmail: {
-    fontFamily: typography.fonts.regular,
-    fontSize: typography.sizes.sm,
-    color: colors.neutral[500],
-  },
-});
+const getStyles = (isDark: boolean, themeColors: any) =>
+  StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: themeColors.background,
+    },
+    headerRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+    },
+    backButton: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: spacing.xs,
+    },
+    backText: {
+      fontFamily: typography.fonts.medium,
+      fontSize: typography.sizes.base,
+      color: colors.white,
+    },
+    headerTitle: {
+      fontFamily: typography.fonts.bold,
+      fontSize: typography.sizes['2xl'],
+      color: colors.white,
+      marginTop: spacing.sm,
+    },
+    form: {
+      flex: 1,
+    },
+    formContent: {
+      padding: spacing.xl,
+      paddingBottom: spacing['4xl'],
+    },
+    label: {
+      fontFamily: typography.fonts.medium,
+      fontSize: typography.sizes.sm + 1,
+      color: themeColors.text,
+      marginBottom: spacing.sm,
+    },
+    priorityRow: {
+      flexDirection: 'row',
+      gap: spacing.sm,
+      marginBottom: spacing.base,
+    },
+    priorityPill: {
+      flex: 1,
+      height: 44,
+      borderRadius: radius.md,
+      borderWidth: 1.5,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    priorityText: {
+      fontFamily: typography.fonts.semiBold,
+      fontSize: typography.sizes.base,
+    },
+    selectField: {
+      height: 52,
+      borderRadius: radius.md,
+      borderWidth: 1.5,
+      borderColor: themeColors.border,
+      backgroundColor: themeColors.card,
+      flexDirection: 'row',
+      alignItems: 'center',
+      paddingHorizontal: spacing.base,
+      justifyContent: 'space-between',
+      marginBottom: spacing.base,
+    },
+    selectFieldError: {
+      borderColor: colors.semantic.error,
+    },
+    selectPlaceholder: {
+      fontFamily: typography.fonts.regular,
+      fontSize: typography.sizes.base,
+      color: isDark ? colors.neutral[500] : colors.neutral[400],
+    },
+    selectedEmployee: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: spacing.sm,
+    },
+    selectedEmployeeName: {
+      fontFamily: typography.fonts.medium,
+      fontSize: typography.sizes.base,
+      color: themeColors.text,
+    },
+    errorText: {
+      fontFamily: typography.fonts.medium,
+      fontSize: typography.sizes.sm,
+      color: colors.semantic.error,
+      marginTop: -spacing.sm,
+      marginBottom: spacing.md,
+    },
+    submitContainer: {
+      marginTop: spacing.lg,
+    },
+    modalOverlay: {
+      flex: 1,
+      backgroundColor: 'rgba(0,0,0,0.5)',
+      justifyContent: 'flex-end',
+    },
+    modalContent: {
+      backgroundColor: themeColors.card,
+      borderTopLeftRadius: radius['2xl'],
+      borderTopRightRadius: radius['2xl'],
+      maxHeight: '70%',
+      paddingTop: spacing.xl,
+      paddingHorizontal: spacing.xl,
+    },
+    modalHeader: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      marginBottom: spacing.lg,
+    },
+    modalTitle: {
+      fontFamily: typography.fonts.semiBold,
+      fontSize: typography.sizes.lg,
+      color: themeColors.text,
+    },
+    employeeRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      paddingVertical: spacing.md,
+      borderBottomWidth: 1,
+      borderBottomColor: themeColors.border,
+      gap: spacing.md,
+    },
+    employeeInfo: {
+      flex: 1,
+    },
+    employeeName: {
+      fontFamily: typography.fonts.medium,
+      fontSize: typography.sizes.base,
+      color: themeColors.text,
+    },
+    employeeEmail: {
+      fontFamily: typography.fonts.regular,
+      fontSize: typography.sizes.sm,
+      color: themeColors.textSecondary,
+    },
+  });

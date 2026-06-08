@@ -13,6 +13,7 @@ import Svg, { Path, Circle } from 'react-native-svg';
 import { colors } from '../../theme/colors';
 import { typography } from '../../theme/typography';
 import { radius, spacing } from '../../theme/spacing';
+import { useTheme } from '../../theme/ThemeContext';
 
 interface InputProps extends Omit<TextInputProps, 'style'> {
   label: string;
@@ -77,6 +78,7 @@ export default function Input({
 }: InputProps) {
   const [isFocused, setIsFocused] = useState(false);
   const [isSecure, setIsSecure] = useState(secureTextEntry);
+  const { isDark, themeColors } = useTheme();
 
   const handleFocus = (e: any) => {
     setIsFocused(true);
@@ -97,19 +99,26 @@ export default function Input({
     ? colors.semantic.error
     : isFocused
     ? colors.brand.purple
+    : isDark
+    ? colors.neutral[500]
     : colors.neutral[400];
 
   const borderColor = error
     ? colors.semantic.error
     : isFocused
     ? colors.brand.purple
-    : colors.surface.border;
+    : themeColors.border;
+
+  const labelColor = isDark ? themeColors.text : colors.neutral[700];
+  const inputBgColor = themeColors.whiteOrCard;
+  const inputTextColor = themeColors.text;
+  const placeholderColor = isDark ? colors.neutral[500] : colors.neutral[400];
 
   return (
     <View style={[styles.container, containerStyle]}>
-      <Text style={[styles.label, error && styles.labelError]}>{label}</Text>
+      <Text style={[styles.label, { color: labelColor }, error && styles.labelError]}>{label}</Text>
       
-      <View style={[styles.inputWrapper, { borderColor }]}>
+      <View style={[styles.inputWrapper, { borderColor, backgroundColor: inputBgColor }]}>
         {leftIcon && (
           <View style={styles.leftIconWrapper}>
             <InputIcon name={leftIcon} color={iconColor} />
@@ -117,8 +126,8 @@ export default function Input({
         )}
 
         <TextInput
-          style={[styles.input, leftIcon ? styles.inputWithIcon : null]}
-          placeholderTextColor={colors.neutral[400]}
+          style={[styles.input, { color: inputTextColor }, leftIcon ? styles.inputWithIcon : null]}
+          placeholderTextColor={placeholderColor}
           secureTextEntry={isSecure}
           onFocus={handleFocus}
           onBlur={handleBlur}

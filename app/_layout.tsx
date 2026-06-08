@@ -19,6 +19,8 @@ import { StatusBar } from 'expo-status-bar';
 import { View, ActivityIndicator } from 'react-native';
 import { colors } from '../src/theme/colors';
 
+import { ThemeProvider, useTheme } from '../src/theme/ThemeContext';
+
 function AuthGuard({ children }: { children: React.ReactNode }) {
   const { user, isInitialized } = useAppSelector((s) => s.auth);
   const router = useRouter();
@@ -54,6 +56,18 @@ function AuthGuard({ children }: { children: React.ReactNode }) {
   return <>{children}</>;
 }
 
+function InnerLayout() {
+  const { isDark } = useTheme();
+  return (
+    <>
+      <StatusBar style={isDark ? 'light' : 'dark'} />
+      <AuthGuard>
+        <Stack screenOptions={{ headerShown: false, animation: 'fade' }} />
+      </AuthGuard>
+    </>
+  );
+}
+
 export default function RootLayout() {
   const [fontsLoaded] = useFonts({
     Poppins_400Regular,
@@ -75,11 +89,10 @@ export default function RootLayout() {
     <Provider store={store}>
       <GestureHandlerRootView style={{ flex: 1 }}>
         <SafeAreaProvider>
-          <StatusBar style="auto" />
-          <AuthGuard>
-            <Stack screenOptions={{ headerShown: false, animation: 'fade' }} />
-          </AuthGuard>
-          <Toast />
+          <ThemeProvider>
+            <InnerLayout />
+            <Toast />
+          </ThemeProvider>
         </SafeAreaProvider>
       </GestureHandlerRootView>
     </Provider>

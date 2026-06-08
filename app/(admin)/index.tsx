@@ -39,23 +39,21 @@ import type { Task } from '../../src/types/task.types';
 
 const { width: screenWidth } = Dimensions.get('window');
 
-// Animated stat number component
-const AnimatedNumber: React.FC<{ value: number; delay?: number }> = ({ value, delay = 0 }) => {
+import { useTheme } from '../../src/theme/ThemeContext';
+
+const AnimatedNumber: React.FC<{ value: number; delay?: number; isDark: boolean }> = ({ value, delay = 0, isDark }) => {
   const animVal = useSharedValue(0);
 
   useEffect(() => {
     animVal.value = withDelay(delay, withTiming(value, { duration: COUNT_UP_DURATION_MS, easing: Easing.out(Easing.cubic) }));
   }, [value, delay, animVal]);
 
-  const style = useAnimatedStyle(() => ({
-    // Display is handled by rounding the animated value
-  }));
+  const textColor = isDark ? colors.white : colors.neutral[900];
 
-  // Use a simpler approach for count-up: just show the final value with a fade
   return (
     <Animated.Text
       entering={FadeIn.delay(delay).duration(400)}
-      style={statStyles.count}
+      style={[statStyles.count, { color: textColor }]}
     >
       {value}
     </Animated.Text>
@@ -68,9 +66,11 @@ interface StatCardProps {
   count: number;
   label: string;
   delay: number;
+  isDark: boolean;
+  themeColors: any;
 }
 
-const StatCard: React.FC<StatCardProps> = React.memo(({ icon, gradientColors, count, label, delay }) => {
+const StatCard: React.FC<StatCardProps> = React.memo(({ icon, gradientColors, count, label, delay, isDark, themeColors }) => {
   const iconPaths: Record<string, string> = {
     clipboard: 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2',
     clock: 'M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z',
@@ -82,7 +82,7 @@ const StatCard: React.FC<StatCardProps> = React.memo(({ icon, gradientColors, co
 
   return (
     <Animated.View entering={SlideInUp.delay(delay).duration(400).springify()}>
-      <View style={[statStyles.card, shadows.md]}>
+      <View style={[statStyles.card, shadows.sm, { backgroundColor: themeColors.card, borderColor: themeColors.border, borderWidth: isDark ? 1 : 0 }]}>
         {isGradient ? (
           <LinearGradient colors={gradientColors} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={statStyles.iconCircle}>
             <Svg width={20} height={20} viewBox="0 0 24 24" fill="none" stroke={colors.white} strokeWidth={2}>
@@ -96,8 +96,8 @@ const StatCard: React.FC<StatCardProps> = React.memo(({ icon, gradientColors, co
             </Svg>
           </View>
         )}
-        <AnimatedNumber value={count} delay={delay} />
-        <Text style={statStyles.label}>{label}</Text>
+        <AnimatedNumber value={count} delay={delay} isDark={isDark} />
+        <Text style={[statStyles.label, { color: themeColors.textSecondary }]}>{label}</Text>
       </View>
     </Animated.View>
   );
@@ -107,10 +107,12 @@ StatCard.displayName = 'StatCard';
 export default function AdminDashboard() {
   const dispatch = useAppDispatch();
   const router = useRouter();
-  const insets = useSafeAreaInsets();
   const { user } = useAppSelector((s) => s.auth);
   const { items: tasks, stats, isLoading } = useAppSelector((s) => s.tasks);
   const [refreshing, setRefreshing] = React.useState(false);
+  const { isDark, toggleTheme, themeColors } = useTheme();
+
+  const styles = getStyles(isDark, themeColors);
 
   // FAB animation
   const fabTranslateY = useSharedValue(80);
@@ -169,7 +171,7 @@ export default function AdminDashboard() {
             refreshing={refreshing}
             onRefresh={onRefresh}
             tintColor={colors.primary.DEFAULT}
-            colors={[colors.primary.DEFAULT, colors.brand.purple]}
+            colors={[colors.primary.DEFAULT]}
           />
         }
       >
@@ -184,9 +186,20 @@ export default function AdminDashboard() {
             </View>
           }
           rightContent={
-            <TouchableOpacity onPress={handleLogout} activeOpacity={0.7}>
-              <Avatar name={user?.name || 'Admin'} size={44} />
-            </TouchableOpacity>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 14 }}>
+              <TouchableOpacity onPress={toggleTheme} activeOpacity={0.7} style={styles.themeButton}>
+                <Svg width={20} height={20} viewBox="0 0 24 24" fill="none" stroke={colors.white} strokeWidth={2}>
+                  {isDark ? (
+                    <Path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42M12 7a5 5 0 100 10 5 5 0 000-10z" strokeLinecap="round" strokeLinejoin="round" />
+                  ) : (
+                    <Path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z" strokeLinecap="round" strokeLinejoin="round" />
+                  )}
+                </Svg>
+              </TouchableOpacity>
+              <TouchableOpacity onPress={handleLogout} activeOpacity={0.7}>
+                <Avatar name={user?.name || 'Admin'} size={44} />
+              </TouchableOpacity>
+            </View>
           }
         />
 
@@ -201,17 +214,17 @@ export default function AdminDashboard() {
               contentContainerStyle={styles.statsRow}
               style={styles.statsContainer}
             >
-              <StatCard icon="clipboard" gradientColors={['#FF1F8E', '#8B1FCC']} count={stats?.total || 0} label="Total Tasks" delay={100} />
-              <StatCard icon="clock" gradientColors="#FFB800" count={stats?.pending || 0} label="Pending" delay={200} />
-              <StatCard icon="zap" gradientColors="#FF1F8E" count={stats?.inProgress || 0} label="In Progress" delay={300} />
-              <StatCard icon="check" gradientColors="#8B1FCC" count={stats?.completed || 0} label="Completed" delay={400} />
+              <StatCard icon="clipboard" gradientColors={['#FF1F8E', '#8B1FCC']} count={stats?.total || 0} label="Total Tasks" delay={100} isDark={isDark} themeColors={themeColors} />
+              <StatCard icon="clock" gradientColors="#FFB800" count={stats?.pending || 0} label="Pending" delay={200} isDark={isDark} themeColors={themeColors} />
+              <StatCard icon="zap" gradientColors="#FF1F8E" count={stats?.inProgress || 0} label="In Progress" delay={300} isDark={isDark} themeColors={themeColors} />
+              <StatCard icon="check" gradientColors="#8B1FCC" count={stats?.completed || 0} label="Completed" delay={400} isDark={isDark} themeColors={themeColors} />
             </ScrollView>
           )}
 
           {/* Recent Tasks */}
           <View style={styles.sectionHeader}>
             <Text style={styles.sectionTitle}>Recent Tasks</Text>
-            <TouchableOpacity onPress={() => router.push('/(admin)/tasks/')}>
+            <TouchableOpacity onPress={() => router.push('/(admin)/tasks')}>
               <Text style={styles.seeAll}>See All</Text>
             </TouchableOpacity>
           </View>
@@ -249,7 +262,6 @@ const statStyles = StyleSheet.create({
   card: {
     width: 130,
     height: 100,
-    backgroundColor: colors.white,
     borderRadius: radius.lg,
     padding: spacing.md,
     alignItems: 'center',
@@ -266,20 +278,18 @@ const statStyles = StyleSheet.create({
   count: {
     fontFamily: typography.fonts.extraBold,
     fontSize: 26,
-    color: colors.neutral[900],
   },
   label: {
     fontFamily: typography.fonts.regular,
     fontSize: typography.sizes.xs + 1,
-    color: colors.neutral[500],
     marginTop: 2,
   },
 });
 
-const styles = StyleSheet.create({
+const getStyles = (isDark: boolean, themeColors: any) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.surface.background,
+    backgroundColor: themeColors.background,
   },
   content: {
     paddingHorizontal: spacing.base,
@@ -302,6 +312,11 @@ const styles = StyleSheet.create({
     color: 'rgba(255,255,255,0.7)',
     marginTop: spacing.xs,
   },
+  themeButton: {
+    padding: spacing.xs,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
   statsContainer: {
     marginBottom: spacing.xl,
     marginHorizontal: -spacing.base,
@@ -319,7 +334,7 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontFamily: typography.fonts.semiBold,
     fontSize: typography.sizes.lg,
-    color: colors.neutral[900],
+    color: themeColors.text,
   },
   seeAll: {
     fontFamily: typography.fonts.medium,

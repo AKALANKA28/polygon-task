@@ -33,6 +33,7 @@ import { colors } from '../../src/theme/colors';
 import { radius, spacing } from '../../src/theme/spacing';
 import { typography } from '../../src/theme/typography';
 import { LoginFormData, loginSchema } from '../../src/utils/validators';
+import { useTheme } from '../../src/theme/ThemeContext';
 
 const { height: screenHeight } = Dimensions.get('window');
 
@@ -41,6 +42,8 @@ export default function LoginScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { isLoading, error, user } = useAppSelector((s) => s.auth);
+  const { isDark, themeColors } = useTheme();
+  const styles = getStyles(isDark, themeColors);
 
   // Shake animation for errors
   const shakeX = useSharedValue(0);
@@ -212,113 +215,116 @@ export default function LoginScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: colors.surface.background,
-  },
-  scrollContent: {
-    flexGrow: 1,
-  },
-  header: {
-    minHeight: screenHeight * 0.38,
-    justifyContent: 'center',
-    alignItems: 'center',
-    overflow: 'hidden',
-    paddingBottom: spacing['3xl'],
-  },
-  circle: {
-    position: 'absolute',
-    width: 300,
-    height: 300,
-    borderRadius: 150,
-    backgroundColor: 'rgba(255,255,255,0.08)',
-  },
-  circleTopRight: {
-    top: -100,
-    right: -80,
-  },
-  circleBottomLeft: {
-    bottom: -150,
-    left: -100,
-  },
-  headerContent: {
-    alignItems: 'center',
-    zIndex: 1,
-  },
-  logoContainer: {
-    marginBottom: spacing.xl,
-  },
-  logoGlow: {
-    width: 80,
-    height: 80,
-    borderRadius: 20,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  logoLetter: {
-    fontFamily: typography.fonts.extraBold,
-    fontSize: 40,
-    color: colors.white,
-  },
-  welcomeText: {
-    fontFamily: typography.fonts.bold,
-    fontSize: 28,
-    color: colors.white,
-  },
-  subtitleText: {
-    fontFamily: typography.fonts.regular,
-    fontSize: typography.sizes.base,
-    color: 'rgba(255,255,255,0.75)',
-    marginTop: spacing.xs,
-  },
-  formCard: {
-    flex: 1,
-    backgroundColor: colors.surface.background,
-    borderTopLeftRadius: 32,
-    borderTopRightRadius: 32,
-    marginTop: -32,
-    paddingHorizontal: 28,
-    paddingTop: 36,
-    paddingBottom: 24,
-  },
-  errorCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#FFF5F5',
-    borderWidth: 1,
-    borderColor: '#FECACA',
-    borderRadius: radius.md,
-    padding: spacing.md,
-    marginBottom: spacing.base,
-    gap: spacing.sm,
-  },
-  errorText: {
-    flex: 1,
-    fontFamily: typography.fonts.medium,
-    fontSize: typography.sizes.sm + 1,
-    color: '#DC2626',
-  },
-  buttonContainer: {
-    marginTop: spacing.sm,
-  },
-  hintContainer: {
-    marginTop: spacing['2xl'],
-    padding: spacing.base,
-    backgroundColor: colors.surface.overlay,
-    borderRadius: radius.md,
-    alignItems: 'center',
-  },
-  hintTitle: {
-    fontFamily: typography.fonts.semiBold,
-    fontSize: typography.sizes.sm,
-    color: colors.brand.purple,
-    marginBottom: spacing.sm,
-  },
-  hintText: {
-    fontFamily: typography.fonts.regular,
-    fontSize: typography.sizes.sm,
-    color: colors.neutral[500],
-    marginTop: 2,
-  },
-});
+const getStyles = (isDark: boolean, themeColors: any) =>
+  StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: themeColors.background,
+    },
+    scrollContent: {
+      flexGrow: 1,
+    },
+    header: {
+      minHeight: screenHeight * 0.38,
+      justifyContent: 'center',
+      alignItems: 'center',
+      overflow: 'hidden',
+      paddingBottom: spacing['3xl'],
+    },
+    circle: {
+      position: 'absolute',
+      width: 300,
+      height: 300,
+      borderRadius: 150,
+      backgroundColor: 'rgba(255,255,255,0.08)',
+    },
+    circleTopRight: {
+      top: -100,
+      right: -80,
+    },
+    circleBottomLeft: {
+      bottom: -150,
+      left: -100,
+    },
+    headerContent: {
+      alignItems: 'center',
+      zIndex: 1,
+    },
+    logoContainer: {
+      marginBottom: spacing.xl,
+    },
+    logoGlow: {
+      width: 80,
+      height: 80,
+      borderRadius: 20,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    logoLetter: {
+      fontFamily: typography.fonts.extraBold,
+      fontSize: 40,
+      color: colors.white,
+    },
+    welcomeText: {
+      fontFamily: typography.fonts.bold,
+      fontSize: 28,
+      color: colors.white,
+    },
+    subtitleText: {
+      fontFamily: typography.fonts.regular,
+      fontSize: typography.sizes.base,
+      color: 'rgba(255,255,255,0.75)',
+      marginTop: spacing.xs,
+    },
+    formCard: {
+      flex: 1,
+      backgroundColor: themeColors.background,
+      borderTopLeftRadius: 32,
+      borderTopRightRadius: 32,
+      marginTop: -32,
+      paddingHorizontal: 28,
+      paddingTop: 36,
+      paddingBottom: 24,
+    },
+    errorCard: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      backgroundColor: isDark ? 'rgba(239, 68, 68, 0.15)' : '#FFF5F5',
+      borderWidth: 1,
+      borderColor: isDark ? '#EF4444' : '#FECACA',
+      borderRadius: radius.md,
+      padding: spacing.md,
+      marginBottom: spacing.base,
+      gap: spacing.sm,
+    },
+    errorText: {
+      flex: 1,
+      fontFamily: typography.fonts.medium,
+      fontSize: typography.sizes.sm + 1,
+      color: isDark ? colors.neutral[200] : '#DC2626',
+    },
+    buttonContainer: {
+      marginTop: spacing.sm,
+    },
+    hintContainer: {
+      marginTop: spacing['2xl'],
+      padding: spacing.base,
+      backgroundColor: themeColors.overlay,
+      borderRadius: radius.md,
+      alignItems: 'center',
+      borderWidth: isDark ? 1 : 0,
+      borderColor: themeColors.border,
+    },
+    hintTitle: {
+      fontFamily: typography.fonts.semiBold,
+      fontSize: typography.sizes.sm,
+      color: colors.brand.purple,
+      marginBottom: spacing.sm,
+    },
+    hintText: {
+      fontFamily: typography.fonts.regular,
+      fontSize: typography.sizes.sm,
+      color: themeColors.textSecondary,
+      marginTop: 2,
+    },
+  });

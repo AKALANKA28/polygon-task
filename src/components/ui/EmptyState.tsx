@@ -4,6 +4,7 @@ import Svg, { Path, Circle } from 'react-native-svg';
 import { colors } from '../../theme/colors';
 import { typography } from '../../theme/typography';
 import { spacing } from '../../theme/spacing';
+import { useTheme } from '../../theme/ThemeContext';
 import Button from './Button';
 
 interface EmptyStateProps {
@@ -24,19 +25,28 @@ export default function EmptyState({
   icon,
 }: EmptyStateProps) {
   const displayActionTitle = actionTitle || actionLabel;
+  const { isDark, themeColors } = useTheme();
+
   return (
     <View style={styles.container}>
       <View style={styles.iconContainer}>
         {icon || (
-          <Svg width={64} height={64} viewBox="0 0 24 24" fill="none" stroke={colors.neutral[300]} strokeWidth={1.5}>
+          <Svg 
+            width={64} 
+            height={64} 
+            viewBox="0 0 24 24" 
+            fill="none" 
+            stroke={isDark ? colors.neutral[600] : colors.neutral[300]} 
+            strokeWidth={1.5}
+          >
             <Path d="M9 13h6M9 17h3" strokeLinecap="round" strokeLinejoin="round" />
             <Path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
             <Path d="M14 2v6h6" />
           </Svg>
         )}
       </View>
-      <Text style={styles.title}>{title}</Text>
-      <Text style={styles.subtitle}>{subtitle}</Text>
+      <Text style={[styles.title, { color: themeColors.text }]}>{title}</Text>
+      <Text style={[styles.subtitle, { color: themeColors.textSecondary }]}>{subtitle}</Text>
 
       {displayActionTitle && onAction && (
         <View style={styles.actionContainer}>
@@ -61,14 +71,12 @@ const styles = StyleSheet.create({
   title: {
     fontFamily: typography.fonts.semiBold,
     fontSize: typography.sizes.md + 1,
-    color: colors.neutral[800],
     textAlign: 'center',
     marginBottom: spacing.xs,
   },
   subtitle: {
     fontFamily: typography.fonts.regular,
     fontSize: typography.sizes.base,
-    color: colors.neutral[400],
     textAlign: 'center',
     lineHeight: typography.sizes.base * typography.lineHeights.normal,
   },

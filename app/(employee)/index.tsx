@@ -23,10 +23,22 @@ import { spacing, radius } from '../../src/theme/spacing';
 import { isDueToday } from '../../src/utils/formatters';
 import type { Task, TaskStatus, TaskPriority } from '../../src/types/task.types';
 
-const StatChip: React.FC<{ count: number; label: string; color: string }> = React.memo(({ count, label, color }) => (
-  <Animated.View entering={FadeIn.delay(200).duration(300)} style={[statStyles.chip, { borderColor: color + '40' }]}>
+import { useTheme } from '../../src/theme/ThemeContext';
+
+const StatChip: React.FC<{ count: number; label: string; color: string; isDark: boolean; themeColors: any }> = React.memo(({ count, label, color, isDark, themeColors }) => (
+  <Animated.View
+    entering={FadeIn.delay(200).duration(300)}
+    style={[
+      statStyles.chip,
+      {
+        borderColor: color + '40',
+        backgroundColor: themeColors.card,
+        borderWidth: isDark ? 1 : 0.5,
+      }
+    ]}
+  >
     <Text style={[statStyles.chipCount, { color }]}>{count}</Text>
-    <Text style={statStyles.chipLabel}>{label}</Text>
+    <Text style={[statStyles.chipLabel, { color: themeColors.textSecondary }]}>{label}</Text>
   </Animated.View>
 ));
 StatChip.displayName = 'StatChip';
@@ -38,13 +50,15 @@ export default function EmployeeDashboard() {
   const { isLoading, searchQuery, filterStatus, filterPriority } = useAppSelector((s) => s.tasks);
   const filteredTasks = useAppSelector(selectFilteredTasks);
   const [refreshing, setRefreshing] = useState(false);
+  const { isDark, themeColors } = useTheme();
+
+  const styles = getStyles(isDark, themeColors);
 
   useEffect(() => {
     dispatch(fetchTasks());
   }, [dispatch]);
 
   const stats = useMemo(() => {
-    const items = useAppSelector.length ? filteredTasks : [];
     return {
       pending: filteredTasks.filter((t) => t.status === 'pending').length,
       inProgress: filteredTasks.filter((t) => t.status === 'in_progress').length,
@@ -91,9 +105,9 @@ export default function EmployeeDashboard() {
         <View style={styles.content}>
           {/* Stats Strip */}
           <View style={styles.statsRow}>
-            <StatChip count={stats.pending} label="Pending" color={getStatusColors('pending').dot} />
-            <StatChip count={stats.inProgress} label="In Progress" color={getStatusColors('in_progress').dot} />
-            <StatChip count={stats.completed} label="Completed" color={getStatusColors('completed').dot} />
+            <StatChip count={stats.pending} label="Pending" color={getStatusColors('pending').dot} isDark={isDark} themeColors={themeColors} />
+            <StatChip count={stats.inProgress} label="In Progress" color={getStatusColors('in_progress').dot} isDark={isDark} themeColors={themeColors} />
+            <StatChip count={stats.completed} label="Completed" color={getStatusColors('completed').dot} isDark={isDark} themeColors={themeColors} />
           </View>
 
           {/* Today's tasks */}
@@ -150,8 +164,6 @@ const statStyles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: spacing.md,
     borderRadius: radius.md,
-    backgroundColor: colors.white,
-    borderWidth: 1,
   },
   chipCount: {
     fontFamily: typography.fonts.bold,
@@ -160,15 +172,14 @@ const statStyles = StyleSheet.create({
   chipLabel: {
     fontFamily: typography.fonts.regular,
     fontSize: typography.sizes.xs + 1,
-    color: colors.neutral[500],
     marginTop: 2,
   },
 });
 
-const styles = StyleSheet.create({
+const getStyles = (isDark: boolean, themeColors: any) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.surface.background,
+    backgroundColor: themeColors.background,
   },
   headerTitle: {
     fontFamily: typography.fonts.bold,
@@ -196,7 +207,7 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontFamily: typography.fonts.semiBold,
     fontSize: typography.sizes.lg,
-    color: colors.neutral[900],
+    color: themeColors.text,
     marginBottom: spacing.md,
   },
   todayChip: {

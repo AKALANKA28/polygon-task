@@ -6,6 +6,7 @@ import {
   ScrollView,
   KeyboardAvoidingView,
   Platform,
+  TouchableOpacity,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useForm, Controller } from 'react-hook-form';
@@ -25,6 +26,7 @@ import { toast } from '../../../src/utils/toast';
 import { colors } from '../../../src/theme/colors';
 import { typography } from '../../../src/theme/typography';
 import { spacing, radius } from '../../../src/theme/spacing';
+import { useTheme } from '../../../src/theme/ThemeContext';
 import Svg, { Path } from 'react-native-svg';
 
 export default function ProfileScreen() {
@@ -33,6 +35,9 @@ export default function ProfileScreen() {
   const { user } = useAppSelector((s) => s.auth);
   const [showLogoutModal, setShowLogoutModal] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+
+  const { themeMode, setThemeMode, themeColors, isDark } = useTheme();
+  const styles = getStyles(isDark, themeColors);
 
   const {
     control,
@@ -144,6 +149,47 @@ export default function ProfileScreen() {
           />
         </View>
 
+        {/* Preferences Section */}
+        <View style={styles.preferencesSection}>
+          <Text style={styles.sectionTitle}>Preferences</Text>
+          <View style={styles.preferenceCard}>
+            <View style={styles.preferenceHeader}>
+              <Text style={styles.preferenceTitle}>Theme Mode</Text>
+              <Text style={styles.preferenceSubtitle}>Choose app appearance preference</Text>
+            </View>
+            <View style={styles.themeOptions}>
+              {(['system', 'light', 'dark'] as const).map((mode) => {
+                const isActive = themeMode === mode;
+                return (
+                  <TouchableOpacity
+                    key={mode}
+                    style={[
+                      styles.themeOption,
+                      isActive && styles.themeOptionActive,
+                      isActive && { borderColor: colors.brand.magenta }
+                    ]}
+                    onPress={() => {
+                      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                      setThemeMode(mode);
+                    }}
+                    activeOpacity={0.7}
+                  >
+                    <Text
+                      style={[
+                        styles.themeOptionText,
+                        isActive && styles.themeOptionTextActive,
+                        isActive && { color: colors.brand.magenta }
+                      ]}
+                    >
+                      {mode.charAt(0).toUpperCase() + mode.slice(1)}
+                    </Text>
+                  </TouchableOpacity>
+                );
+              })}
+            </View>
+          </View>
+        </View>
+
         {/* Logout */}
         <View style={styles.logoutSection}>
           <View style={styles.divider} />
@@ -196,44 +242,101 @@ export default function ProfileScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: colors.surface.background },
-  scrollContent: { paddingBottom: spacing['4xl'] },
-  profileSection: {
-    alignItems: 'center', paddingVertical: spacing.xl, gap: spacing.sm,
-  },
-  profileName: {
-    fontFamily: typography.fonts.bold, fontSize: 22, color: colors.neutral[900],
-  },
-  profileEmail: {
-    fontFamily: typography.fonts.regular, fontSize: typography.sizes.base, color: colors.neutral[500],
-  },
-  formSection: {
-    paddingHorizontal: spacing.xl, marginTop: spacing.base,
-  },
-  logoutSection: {
-    paddingHorizontal: spacing.xl, marginTop: spacing.lg,
-  },
-  divider: {
-    height: 1, backgroundColor: colors.surface.border, marginBottom: spacing.lg,
-  },
-  modal: { justifyContent: 'flex-end', margin: 0 },
-  modalContent: {
-    backgroundColor: colors.white,
-    borderTopLeftRadius: radius['2xl'],
-    borderTopRightRadius: radius['2xl'],
-    padding: spacing.xl,
-    paddingBottom: spacing['3xl'],
-  },
-  modalTitle: {
-    fontFamily: typography.fonts.semiBold, fontSize: typography.sizes.lg, color: colors.neutral[900],
-    textAlign: 'center',
-  },
-  modalMessage: {
-    fontFamily: typography.fonts.regular, fontSize: typography.sizes.base, color: colors.neutral[500],
-    textAlign: 'center', marginTop: spacing.sm, marginBottom: spacing.xl,
-  },
-  modalButtons: {
-    flexDirection: 'row', gap: spacing.md,
-  },
-});
+const getStyles = (isDark: boolean, themeColors: any) =>
+  StyleSheet.create({
+    container: { flex: 1, backgroundColor: themeColors.background },
+    scrollContent: { paddingBottom: spacing['4xl'] },
+    profileSection: {
+      alignItems: 'center', paddingVertical: spacing.xl, gap: spacing.sm,
+    },
+    profileName: {
+      fontFamily: typography.fonts.bold, fontSize: 22, color: themeColors.text,
+    },
+    profileEmail: {
+      fontFamily: typography.fonts.regular, fontSize: typography.sizes.base, color: themeColors.textSecondary,
+    },
+    formSection: {
+      paddingHorizontal: spacing.xl, marginTop: spacing.base,
+    },
+    preferencesSection: {
+      paddingHorizontal: spacing.xl,
+      marginTop: spacing.lg,
+    },
+    sectionTitle: {
+      fontFamily: typography.fonts.semiBold,
+      fontSize: typography.sizes.md,
+      color: themeColors.text,
+      marginBottom: spacing.sm,
+    },
+    preferenceCard: {
+      backgroundColor: themeColors.card,
+      borderRadius: radius.md,
+      borderWidth: 1,
+      borderColor: themeColors.border,
+      padding: spacing.md,
+    },
+    preferenceHeader: {
+      marginBottom: spacing.md,
+    },
+    preferenceTitle: {
+      fontFamily: typography.fonts.medium,
+      fontSize: typography.sizes.base,
+      color: themeColors.text,
+    },
+    preferenceSubtitle: {
+      fontFamily: typography.fonts.regular,
+      fontSize: typography.sizes.sm,
+      color: themeColors.textSecondary,
+      marginTop: 2,
+    },
+    themeOptions: {
+      flexDirection: 'row',
+      gap: spacing.sm,
+    },
+    themeOption: {
+      flex: 1,
+      height: 40,
+      borderRadius: radius.sm,
+      borderWidth: 1.5,
+      borderColor: themeColors.border,
+      alignItems: 'center',
+      justifyContent: 'center',
+      backgroundColor: isDark ? colors.neutral[900] : colors.neutral[50],
+    },
+    themeOptionActive: {
+      backgroundColor: isDark ? 'rgba(255, 31, 142, 0.1)' : 'rgba(255, 31, 142, 0.05)',
+    },
+    themeOptionText: {
+      fontFamily: typography.fonts.medium,
+      fontSize: typography.sizes.sm,
+      color: themeColors.textSecondary,
+    },
+    themeOptionTextActive: {
+      fontFamily: typography.fonts.semiBold,
+    },
+    logoutSection: {
+      paddingHorizontal: spacing.xl, marginTop: spacing.lg,
+    },
+    divider: {
+      height: 1, backgroundColor: themeColors.border, marginBottom: spacing.lg,
+    },
+    modal: { justifyContent: 'flex-end', margin: 0 },
+    modalContent: {
+      backgroundColor: themeColors.card,
+      borderTopLeftRadius: radius['2xl'],
+      borderTopRightRadius: radius['2xl'],
+      padding: spacing.xl,
+      paddingBottom: spacing['3xl'],
+    },
+    modalTitle: {
+      fontFamily: typography.fonts.semiBold, fontSize: typography.sizes.lg, color: themeColors.text,
+      textAlign: 'center',
+    },
+    modalMessage: {
+      fontFamily: typography.fonts.regular, fontSize: typography.sizes.base, color: themeColors.textSecondary,
+      textAlign: 'center', marginTop: spacing.sm, marginBottom: spacing.xl,
+    },
+    modalButtons: {
+      flexDirection: 'row', gap: spacing.md,
+    },
+  });

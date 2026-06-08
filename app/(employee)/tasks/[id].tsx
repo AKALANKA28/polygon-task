@@ -15,6 +15,31 @@ import { typography } from '../../../src/theme/typography';
 import { spacing, radius } from '../../../src/theme/spacing';
 import { formatDate, formatRelativeTime, formatPriority, isDueDateOverdue, formatStatus } from '../../../src/utils/formatters';
 import type { TaskStatus } from '../../../src/types/task.types';
+import { useTheme } from '../../../src/theme/ThemeContext';
+
+const getStatusColorsDark = (status: 'pending' | 'in_progress' | 'completed') => {
+  const map = {
+    pending: {
+      bg: 'rgba(255, 184, 0, 0.15)',
+      text: '#FFD166',
+      dot: '#FFB800',
+      border: 'rgba(255, 184, 0, 0.4)',
+    },
+    in_progress: {
+      bg: 'rgba(255, 31, 142, 0.15)',
+      text: '#FF80C4',
+      dot: '#FF1F8E',
+      border: 'rgba(255, 31, 142, 0.4)',
+    },
+    completed: {
+      bg: 'rgba(139, 31, 204, 0.15)',
+      text: '#C084FC',
+      dot: '#8B1FCC',
+      border: 'rgba(139, 31, 204, 0.4)',
+    },
+  };
+  return map[status];
+};
 
 export default function EmployeeTaskDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -22,6 +47,9 @@ export default function EmployeeTaskDetailScreen() {
   const router = useRouter();
   const { selectedTask: task } = useAppSelector((s) => s.tasks);
   const [updatingStatus, setUpdatingStatus] = useState<TaskStatus | null>(null);
+
+  const { isDark, themeColors } = useTheme();
+  const styles = getStyles(isDark, themeColors);
 
   useEffect(() => {
     if (id) dispatch(fetchTaskById(Number(id)));
@@ -100,7 +128,7 @@ export default function EmployeeTaskDetailScreen() {
           <View style={styles.statusButtons}>
             {statusOptions.map((option) => {
               const isSelected = task.status === option.value;
-              const statusColors = getStatusColors(option.value);
+              const statusColors = isDark ? getStatusColorsDark(option.value) : getStatusColors(option.value);
               const isUpdating = updatingStatus === option.value;
 
               return (
@@ -159,7 +187,7 @@ export default function EmployeeTaskDetailScreen() {
           <View style={styles.detailRow}>
             <Text style={styles.detailLabel}>Due Date</Text>
             <View style={styles.detailValue}>
-              <Svg width={16} height={16} viewBox="0 0 24 24" fill="none" stroke={isOverdue ? colors.semantic.error : colors.neutral[500]} strokeWidth={1.8}>
+              <Svg width={16} height={16} viewBox="0 0 24 24" fill="none" stroke={isOverdue ? colors.semantic.error : (isDark ? colors.neutral[400] : colors.neutral[500])} strokeWidth={1.8}>
                 <Path d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" strokeLinecap="round" strokeLinejoin="round" />
               </Svg>
               <Text style={[styles.detailText, isOverdue && { color: colors.semantic.error }]}>
@@ -185,39 +213,40 @@ export default function EmployeeTaskDetailScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: colors.surface.background },
-  backButton: { flexDirection: 'row', alignItems: 'center', gap: spacing.xs },
-  backText: { fontFamily: typography.fonts.medium, fontSize: typography.sizes.base, color: colors.white },
-  headerContent: {
-    flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start',
-    marginTop: spacing.md, gap: spacing.md,
-  },
-  headerTitle: { flex: 1, fontFamily: typography.fonts.bold, fontSize: typography.sizes.xl, color: colors.white },
-  contentCard: {
-    flex: 1, backgroundColor: colors.white, marginTop: -20,
-    borderTopLeftRadius: radius['2xl'], borderTopRightRadius: radius['2xl'],
-  },
-  contentInner: { padding: spacing.xl, paddingBottom: spacing['4xl'] },
-  sectionTitle: {
-    fontFamily: typography.fonts.semiBold, fontSize: typography.sizes.md,
-    color: colors.neutral[900], marginBottom: spacing.md,
-  },
-  statusButtons: { gap: spacing.sm, marginBottom: spacing.xl },
-  statusButton: {
-    height: 52, borderRadius: radius.md, borderWidth: 1.5,
-    flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: spacing.sm,
-  },
-  statusButtonText: { fontFamily: typography.fonts.semiBold, fontSize: typography.sizes.base },
-  detailsSection: { gap: spacing.base },
-  detailRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  detailLabel: { fontFamily: typography.fonts.medium, fontSize: typography.sizes.base, color: colors.neutral[500] },
-  detailValue: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
-  detailText: { fontFamily: typography.fonts.medium, fontSize: typography.sizes.base, color: colors.neutral[900] },
-  descriptionSection: { marginTop: spacing.md },
-  description: {
-    fontFamily: typography.fonts.regular, fontSize: typography.sizes.base, color: colors.neutral[700],
-    lineHeight: typography.sizes.base * typography.lineHeights.relaxed, marginTop: spacing.sm,
-  },
-  loadingContainer: { flex: 1, alignItems: 'center', justifyContent: 'center' },
-});
+const getStyles = (isDark: boolean, themeColors: any) =>
+  StyleSheet.create({
+    container: { flex: 1, backgroundColor: themeColors.background },
+    backButton: { flexDirection: 'row', alignItems: 'center', gap: spacing.xs },
+    backText: { fontFamily: typography.fonts.medium, fontSize: typography.sizes.base, color: colors.white },
+    headerContent: {
+      flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start',
+      marginTop: spacing.md, gap: spacing.md,
+    },
+    headerTitle: { flex: 1, fontFamily: typography.fonts.bold, fontSize: typography.sizes.xl, color: colors.white },
+    contentCard: {
+      flex: 1, backgroundColor: themeColors.card, marginTop: -20,
+      borderTopLeftRadius: radius['2xl'], borderTopRightRadius: radius['2xl'],
+    },
+    contentInner: { padding: spacing.xl, paddingBottom: spacing['4xl'] },
+    sectionTitle: {
+      fontFamily: typography.fonts.semiBold, fontSize: typography.sizes.md,
+      color: themeColors.text, marginBottom: spacing.md,
+    },
+    statusButtons: { gap: spacing.sm, marginBottom: spacing.xl },
+    statusButton: {
+      height: 52, borderRadius: radius.md, borderWidth: 1.5,
+      flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: spacing.sm,
+    },
+    statusButtonText: { fontFamily: typography.fonts.semiBold, fontSize: typography.sizes.base },
+    detailsSection: { gap: spacing.base },
+    detailRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+    detailLabel: { fontFamily: typography.fonts.medium, fontSize: typography.sizes.base, color: themeColors.textSecondary },
+    detailValue: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
+    detailText: { fontFamily: typography.fonts.medium, fontSize: typography.sizes.base, color: themeColors.text },
+    descriptionSection: { marginTop: spacing.md },
+    description: {
+      fontFamily: typography.fonts.regular, fontSize: typography.sizes.base, color: themeColors.text,
+      lineHeight: typography.sizes.base * typography.lineHeights.relaxed, marginTop: spacing.sm,
+    },
+    loadingContainer: { flex: 1, alignItems: 'center', justifyContent: 'center' },
+  });

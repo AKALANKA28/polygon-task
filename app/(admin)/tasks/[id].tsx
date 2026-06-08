@@ -16,6 +16,7 @@ import { typography } from '../../../src/theme/typography';
 import { spacing, radius } from '../../../src/theme/spacing';
 import { formatDate, formatRelativeTime, formatPriority, isDueDateOverdue } from '../../../src/utils/formatters';
 import type { TaskStatus } from '../../../src/types/task.types';
+import { useTheme } from '../../../src/theme/ThemeContext';
 
 export default function TaskDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -23,6 +24,9 @@ export default function TaskDetailScreen() {
   const router = useRouter();
   const { selectedTask: task } = useAppSelector((s) => s.tasks);
   const [updatingStatus, setUpdatingStatus] = useState<TaskStatus | null>(null);
+
+  const { isDark, themeColors } = useTheme();
+  const styles = getStyles(isDark, themeColors);
 
   useEffect(() => {
     if (id) {
@@ -193,122 +197,123 @@ export default function TaskDetailScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: colors.surface.background,
-  },
-  backButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.xs,
-  },
-  backText: {
-    fontFamily: typography.fonts.medium,
-    fontSize: typography.sizes.base,
-    color: colors.white,
-  },
-  headerTitleRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
-    marginTop: spacing.md,
-    gap: spacing.md,
-  },
-  headerTitle: {
-    flex: 1,
-    fontFamily: typography.fonts.bold,
-    fontSize: typography.sizes.xl,
-    color: colors.white,
-  },
-  contentCard: {
-    flex: 1,
-    backgroundColor: colors.white,
-    marginTop: -20,
-    borderTopLeftRadius: radius['2xl'],
-    borderTopRightRadius: radius['2xl'],
-  },
-  contentInner: {
-    padding: spacing.xl,
-    paddingBottom: spacing['4xl'],
-  },
-  sectionTitle: {
-    fontFamily: typography.fonts.semiBold,
-    fontSize: typography.sizes.md,
-    color: colors.neutral[900],
-    marginBottom: spacing.md,
-  },
-  statusButtons: {
-    gap: spacing.sm,
-    marginBottom: spacing.xl,
-  },
-  statusButton: {
-    height: 52,
-    borderRadius: radius.md,
-    borderWidth: 1.5,
-    borderColor: colors.surface.border,
-    backgroundColor: colors.white,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: spacing.sm,
-  },
-  statusButtonSelected: {
-    backgroundColor: colors.primary.DEFAULT,
-    borderColor: colors.primary.DEFAULT,
-  },
-  statusButtonText: {
-    fontFamily: typography.fonts.semiBold,
-    fontSize: typography.sizes.base,
-    color: colors.neutral[600],
-  },
-  statusButtonTextSelected: {
-    color: colors.white,
-  },
-  detailsSection: {
-    gap: spacing.base,
-  },
-  detailRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  detailLabel: {
-    fontFamily: typography.fonts.medium,
-    fontSize: typography.sizes.base,
-    color: colors.neutral[500],
-  },
-  detailValue: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.sm,
-  },
-  detailText: {
-    fontFamily: typography.fonts.medium,
-    fontSize: typography.sizes.base,
-    color: colors.neutral[900],
-  },
-  descriptionSection: {
-    marginTop: spacing.md,
-  },
-  description: {
-    fontFamily: typography.fonts.regular,
-    fontSize: typography.sizes.base,
-    color: colors.neutral[700],
-    lineHeight: typography.sizes.base * typography.lineHeights.relaxed,
-    marginTop: spacing.sm,
-  },
-  deleteContainer: {
-    marginTop: spacing['3xl'],
-  },
-  loadingContainer: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  loadingText: {
-    fontFamily: typography.fonts.medium,
-    fontSize: typography.sizes.base,
-    color: colors.neutral[500],
-  },
-});
+const getStyles = (isDark: boolean, themeColors: any) =>
+  StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: themeColors.background,
+    },
+    backButton: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: spacing.xs,
+    },
+    backText: {
+      fontFamily: typography.fonts.medium,
+      fontSize: typography.sizes.base,
+      color: colors.white,
+    },
+    headerTitleRow: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'flex-start',
+      marginTop: spacing.md,
+      gap: spacing.md,
+    },
+    headerTitle: {
+      flex: 1,
+      fontFamily: typography.fonts.bold,
+      fontSize: typography.sizes.xl,
+      color: colors.white,
+    },
+    contentCard: {
+      flex: 1,
+      backgroundColor: themeColors.card,
+      marginTop: -20,
+      borderTopLeftRadius: radius['2xl'],
+      borderTopRightRadius: radius['2xl'],
+    },
+    contentInner: {
+      padding: spacing.xl,
+      paddingBottom: spacing['4xl'],
+    },
+    sectionTitle: {
+      fontFamily: typography.fonts.semiBold,
+      fontSize: typography.sizes.md,
+      color: themeColors.text,
+      marginBottom: spacing.md,
+    },
+    statusButtons: {
+      gap: spacing.sm,
+      marginBottom: spacing.xl,
+    },
+    statusButton: {
+      height: 52,
+      borderRadius: radius.md,
+      borderWidth: 1.5,
+      borderColor: themeColors.border,
+      backgroundColor: themeColors.card,
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: spacing.sm,
+    },
+    statusButtonSelected: {
+      backgroundColor: colors.primary.DEFAULT,
+      borderColor: colors.primary.DEFAULT,
+    },
+    statusButtonText: {
+      fontFamily: typography.fonts.semiBold,
+      fontSize: typography.sizes.base,
+      color: themeColors.textSecondary,
+    },
+    statusButtonTextSelected: {
+      color: colors.white,
+    },
+    detailsSection: {
+      gap: spacing.base,
+    },
+    detailRow: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+    },
+    detailLabel: {
+      fontFamily: typography.fonts.medium,
+      fontSize: typography.sizes.base,
+      color: themeColors.textSecondary,
+    },
+    detailValue: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: spacing.sm,
+    },
+    detailText: {
+      fontFamily: typography.fonts.medium,
+      fontSize: typography.sizes.base,
+      color: themeColors.text,
+    },
+    descriptionSection: {
+      marginTop: spacing.md,
+    },
+    description: {
+      fontFamily: typography.fonts.regular,
+      fontSize: typography.sizes.base,
+      color: themeColors.text,
+      lineHeight: typography.sizes.base * typography.lineHeights.relaxed,
+      marginTop: spacing.sm,
+    },
+    deleteContainer: {
+      marginTop: spacing['3xl'],
+    },
+    loadingContainer: {
+      flex: 1,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    loadingText: {
+      fontFamily: typography.fonts.medium,
+      fontSize: typography.sizes.base,
+      color: themeColors.textSecondary,
+    },
+  });
