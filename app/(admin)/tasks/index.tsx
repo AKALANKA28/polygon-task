@@ -39,9 +39,14 @@ export default function AllTasksScreen() {
     setRefreshing(false);
   }, [dispatch]);
 
+  const lastPressedTime = React.useRef(0);
+
   const handleTaskPress = useCallback(
     (task: Task) => {
-      router.push(`/(admin)/tasks/${task.id}`);
+      const now = Date.now();
+      if (now - lastPressedTime.current < 800) return;
+      lastPressedTime.current = now;
+      router.navigate(`/(admin)/tasks/${task.id}`);
     },
     [router]
   );

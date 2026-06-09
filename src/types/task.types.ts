@@ -20,6 +20,7 @@ export interface Task {
   priority: TaskPriority;
   assigned_to: number | null;
   assignee?: TaskAssignee;
+  assignees?: TaskAssignee[];
   created_by: number;
   creator?: TaskCreator;
   due_date: string | null;
@@ -31,7 +32,7 @@ export interface CreateTaskDto {
   title: string;
   description?: string;
   priority: TaskPriority;
-  assigned_to: number;
+  assigned_to: number | number[];
   due_date?: string;
 }
 
@@ -40,7 +41,7 @@ export interface UpdateTaskDto {
   description?: string;
   status?: TaskStatus;
   priority?: TaskPriority;
-  assigned_to?: number;
+  assigned_to?: number | number[];
   due_date?: string;
 }
 
@@ -49,4 +50,14 @@ export interface TaskStats {
   pending: number;
   inProgress: number;
   completed: number;
+}
+
+export interface TaskComment {
+  id: number;
+  task_id: number;
+  user_id: number;
+  user_name: string;
+  user_role: 'admin' | 'employee';
+  content: string;
+  created_at: string;
 }

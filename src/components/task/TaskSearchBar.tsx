@@ -4,6 +4,8 @@ import Svg, { Path } from 'react-native-svg';
 import { colors } from '../../theme/colors';
 import { typography } from '../../theme/typography';
 import { radius, spacing } from '../../theme/spacing';
+import { useTheme } from '../../theme/ThemeContext';
+import { normalize } from '../../utils/responsive';
 
 interface TaskSearchBarProps {
   value: string;
@@ -12,6 +14,7 @@ interface TaskSearchBarProps {
 
 export default function TaskSearchBar({ value, onChangeText }: TaskSearchBarProps) {
   const [isFocused, setIsFocused] = React.useState(false);
+  const { isDark, themeColors } = useTheme();
 
   const handleClear = () => {
     onChangeText('');
@@ -21,19 +24,22 @@ export default function TaskSearchBar({ value, onChangeText }: TaskSearchBarProp
     <View
       style={[
         styles.container,
-        isFocused && { borderColor: colors.brand.purple }
+        {
+          backgroundColor: themeColors.card,
+          borderColor: isFocused ? colors.brand.purple : themeColors.border,
+        }
       ]}
     >
       <View style={styles.searchIcon}>
-        <Svg width={18} height={18} viewBox="0 0 24 24" fill="none" stroke={colors.neutral[400]} strokeWidth={2}>
+        <Svg width={normalize(18)} height={normalize(18)} viewBox="0 0 24 24" fill="none" stroke={themeColors.textSecondary} strokeWidth={2}>
           <Path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" strokeLinecap="round" strokeLinejoin="round" />
         </Svg>
       </View>
 
       <TextInput
-        style={styles.input}
+        style={[styles.input, { color: themeColors.text }]}
         placeholder="Search tasks..."
-        placeholderTextColor={colors.neutral[400]}
+        placeholderTextColor={isDark ? colors.neutral[500] : colors.neutral[400]}
         value={value}
         onChangeText={onChangeText}
         onFocus={() => setIsFocused(true)}
@@ -44,7 +50,7 @@ export default function TaskSearchBar({ value, onChangeText }: TaskSearchBarProp
 
       {value.length > 0 && (
         <TouchableOpacity style={styles.clearButton} onPress={handleClear} activeOpacity={0.6}>
-          <Svg width={16} height={16} viewBox="0 0 24 24" fill="none" stroke={colors.neutral[400]} strokeWidth={2}>
+          <Svg width={normalize(16)} height={normalize(16)} viewBox="0 0 24 24" fill="none" stroke={themeColors.textSecondary} strokeWidth={2}>
             <Path d="M6 18L18 6M6 6l12 12" strokeLinecap="round" strokeLinejoin="round" />
           </Svg>
         </TouchableOpacity>
@@ -57,11 +63,9 @@ const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
     alignItems: 'center',
-    height: 48,
+    height: normalize(48),
     borderRadius: radius.md,
-    backgroundColor: colors.white,
     borderWidth: 1.5,
-    borderColor: colors.surface.border,
     paddingHorizontal: spacing.md,
   },
   searchIcon: {
@@ -74,7 +78,6 @@ const styles = StyleSheet.create({
     height: '100%',
     fontFamily: typography.fonts.regular,
     fontSize: typography.sizes.base,
-    color: colors.neutral[900],
     paddingVertical: 0,
   },
   clearButton: {

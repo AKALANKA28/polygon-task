@@ -5,16 +5,20 @@ exports.getAll = async (req, res, next) => {
   try {
     let query = `
       SELECT t.*, 
-        JSON_OBJECT('id', a.id, 'name', a.name, 'avatar_url', a.avatar_url) as assignee,
-        JSON_OBJECT('id', c.id, 'name', c.name) as creator
+        JSON_OBJECT('id', c.id, 'name', c.name) as creator,
+        (
+          SELECT JSON_ARRAYAGG(JSON_OBJECT('id', u.id, 'name', u.name, 'avatar_url', u.avatar_url))
+          FROM task_assignees ta
+          JOIN users u ON ta.user_id = u.id
+          WHERE ta.task_id = t.id
+        ) as assignees
       FROM tasks t
-      LEFT JOIN users a ON t.assigned_to = a.id
       LEFT JOIN users c ON t.created_by = c.id
     `;
     const params = [];
 
     if (req.user.role === 'employee') {
-      query += ' WHERE t.assigned_to = ?';
+      query += ' WHERE t.id IN (SELECT task_id FROM task_assignees WHERE user_id = ?)';
       params.push(req.user.id);
     }
 
@@ -23,7 +27,7 @@ exports.getAll = async (req, res, next) => {
     const [rows] = await pool.query(query, params);
     const tasks = rows.map(row => ({
       ...row,
-      assignee: typeof row.assignee === 'string' ? JSON.parse(row.assignee) : row.assignee,
+      assignees: row.assignees ? (typeof row.assignees === 'string' ? JSON.parse(row.assignees) : row.assignees) : [],
       creator: typeof row.creator === 'string' ? JSON.parse(row.creator) : row.creator,
     }));
 
@@ -38,10 +42,14 @@ exports.getById = async (req, res, next) => {
   try {
     const [rows] = await pool.query(
       `SELECT t.*, 
-        JSON_OBJECT('id', a.id, 'name', a.name, 'avatar_url', a.avatar_url) as assignee,
-        JSON_OBJECT('id', c.id, 'name', c.name) as creator
+        JSON_OBJECT('id', c.id, 'name', c.name) as creator,
+        (
+          SELECT JSON_ARRAYAGG(JSON_OBJECT('id', u.id, 'name', u.name, 'avatar_url', u.avatar_url))
+          FROM task_assignees ta
+          JOIN users u ON ta.user_id = u.id
+          WHERE ta.task_id = t.id
+        ) as assignees
       FROM tasks t
-      LEFT JOIN users a ON t.assigned_to = a.id
       LEFT JOIN users c ON t.created_by = c.id
       WHERE t.id = ?`,
       [req.params.id]
@@ -53,7 +61,7 @@ exports.getById = async (req, res, next) => {
 
     const task = {
       ...rows[0],
-      assignee: typeof rows[0].assignee === 'string' ? JSON.parse(rows[0].assignee) : rows[0].assignee,
+      assignees: rows[0].assignees ? (typeof rows[0].assignees === 'string' ? JSON.parse(rows[0].assignees) : rows[0].assignees) : [],
       creator: typeof rows[0].creator === 'string' ? JSON.parse(rows[0].creator) : rows[0].creator,
     };
 
@@ -73,24 +81,41 @@ exports.create = async (req, res, next) => {
     }
 
     const [result] = await pool.query(
-      'INSERT INTO tasks (title, description, priority, assigned_to, created_by, due_date) VALUES (?, ?, ?, ?, ?, ?)',
-      [title, description || null, priority || 'medium', assigned_to || null, req.user.id, due_date || null]
+      'INSERT INTO tasks (title, description, priority, created_by, due_date) VALUES (?, ?, ?, ?, ?)',
+      [title, description || null, priority || 'medium', req.user.id, due_date || null]
     );
+    const taskId = result.insertId;
+
+    let assigneeIds = [];
+    if (Array.isArray(assigned_to)) {
+      assigneeIds = assigned_to;
+    } else if (assigned_to) {
+      assigneeIds = [assigned_to];
+    }
+
+    if (assigneeIds.length > 0) {
+      const values = assigneeIds.map(uid => [taskId, uid]);
+      await pool.query('INSERT INTO task_assignees (task_id, user_id) VALUES ?', [values]);
+    }
 
     const [rows] = await pool.query(
       `SELECT t.*, 
-        JSON_OBJECT('id', a.id, 'name', a.name, 'avatar_url', a.avatar_url) as assignee,
-        JSON_OBJECT('id', c.id, 'name', c.name) as creator
+        JSON_OBJECT('id', c.id, 'name', c.name) as creator,
+        (
+          SELECT JSON_ARRAYAGG(JSON_OBJECT('id', u.id, 'name', u.name, 'avatar_url', u.avatar_url))
+          FROM task_assignees ta
+          JOIN users u ON ta.user_id = u.id
+          WHERE ta.task_id = t.id
+        ) as assignees
       FROM tasks t
-      LEFT JOIN users a ON t.assigned_to = a.id
       LEFT JOIN users c ON t.created_by = c.id
       WHERE t.id = ?`,
-      [result.insertId]
+      [taskId]
     );
 
     const task = {
       ...rows[0],
-      assignee: typeof rows[0].assignee === 'string' ? JSON.parse(rows[0].assignee) : rows[0].assignee,
+      assignees: rows[0].assignees ? (typeof rows[0].assignees === 'string' ? JSON.parse(rows[0].assignees) : rows[0].assignees) : [],
       creator: typeof rows[0].creator === 'string' ? JSON.parse(rows[0].creator) : rows[0].creator,
     };
 
@@ -115,26 +140,46 @@ exports.update = async (req, res, next) => {
 
     const fields = [];
     const values = [];
+    let assigneeIds = null;
+
     for (const [key, value] of Object.entries(updates)) {
-      if (['title', 'description', 'status', 'priority', 'assigned_to', 'due_date'].includes(key)) {
+      if (key === 'assigned_to') {
+        if (Array.isArray(value)) {
+          assigneeIds = value;
+        } else if (value) {
+          assigneeIds = [value];
+        } else {
+          assigneeIds = [];
+        }
+      } else if (['title', 'description', 'status', 'priority', 'due_date'].includes(key)) {
         fields.push(`${key} = ?`);
         values.push(value);
       }
     }
 
-    if (fields.length === 0) {
-      return res.status(400).json({ success: false, message: 'No valid fields to update' });
+    if (fields.length > 0) {
+      values.push(id);
+      await pool.query(`UPDATE tasks SET ${fields.join(', ')} WHERE id = ?`, values);
     }
 
-    values.push(id);
-    await pool.query(`UPDATE tasks SET ${fields.join(', ')} WHERE id = ?`, values);
+    if (assigneeIds !== null) {
+      await pool.query('DELETE FROM task_assignees WHERE task_id = ?', [id]);
+      if (assigneeIds.length > 0) {
+        const values = assigneeIds.map(uid => [id, uid]);
+        await pool.query('INSERT INTO task_assignees (task_id, user_id) VALUES ?', [values]);
+      }
+    }
 
     const [rows] = await pool.query(
       `SELECT t.*, 
-        JSON_OBJECT('id', a.id, 'name', a.name, 'avatar_url', a.avatar_url) as assignee,
-        JSON_OBJECT('id', c.id, 'name', c.name) as creator
+        JSON_OBJECT('id', c.id, 'name', c.name) as creator,
+        (
+          SELECT JSON_ARRAYAGG(JSON_OBJECT('id', u.id, 'name', u.name, 'avatar_url', u.avatar_url))
+          FROM task_assignees ta
+          JOIN users u ON ta.user_id = u.id
+          WHERE ta.task_id = t.id
+        ) as assignees
       FROM tasks t
-      LEFT JOIN users a ON t.assigned_to = a.id
       LEFT JOIN users c ON t.created_by = c.id
       WHERE t.id = ?`,
       [id]
@@ -146,7 +191,7 @@ exports.update = async (req, res, next) => {
 
     const task = {
       ...rows[0],
-      assignee: typeof rows[0].assignee === 'string' ? JSON.parse(rows[0].assignee) : rows[0].assignee,
+      assignees: rows[0].assignees ? (typeof rows[0].assignees === 'string' ? JSON.parse(rows[0].assignees) : rows[0].assignees) : [],
       creator: typeof rows[0].creator === 'string' ? JSON.parse(rows[0].creator) : rows[0].creator,
     };
 
@@ -176,7 +221,7 @@ exports.getStats = async (req, res, next) => {
     const params = [];
 
     if (req.user.role === 'employee') {
-      whereClause = 'WHERE assigned_to = ?';
+      whereClause = 'WHERE id IN (SELECT task_id FROM task_assignees WHERE user_id = ?)';
       params.push(req.user.id);
     }
 
@@ -199,6 +244,80 @@ exports.getStats = async (req, res, next) => {
         completed: rows[0].completed || 0,
       },
     });
+  } catch (err) {
+    next(err);
+  }
+};
+
+// Get comments for a task
+exports.getComments = async (req, res, next) => {
+  try {
+    const taskId = req.params.id;
+    
+    if (req.user.role === 'employee') {
+      const [taskRows] = await pool.query(
+        'SELECT id FROM tasks WHERE id = ? AND id IN (SELECT task_id FROM task_assignees WHERE user_id = ?)',
+        [taskId, req.user.id]
+      );
+      if (taskRows.length === 0) {
+        return res.status(403).json({ success: false, message: 'Access denied to this task comments' });
+      }
+    }
+
+    const [rows] = await pool.query(
+      `SELECT c.*, u.name as user_name, u.role as user_role
+       FROM comments c
+       JOIN users u ON c.user_id = u.id
+       WHERE c.task_id = ?
+       ORDER BY c.created_at ASC`,
+      [taskId]
+    );
+
+    res.json({ success: true, data: rows });
+  } catch (err) {
+    next(err);
+  }
+};
+
+// Add comment to a task
+exports.addComment = async (req, res, next) => {
+  try {
+    const taskId = req.params.id;
+    const { content } = req.body;
+
+    if (!content || !content.trim()) {
+      return res.status(400).json({ success: false, message: 'Comment content is required' });
+    }
+
+    if (req.user.role === 'employee') {
+      const [taskRows] = await pool.query(
+        'SELECT id FROM tasks WHERE id = ? AND id IN (SELECT task_id FROM task_assignees WHERE user_id = ?)',
+        [taskId, req.user.id]
+      );
+      if (taskRows.length === 0) {
+        return res.status(403).json({ success: false, message: 'Access denied. You cannot comment on this task' });
+      }
+    } else {
+      const [taskRows] = await pool.query('SELECT id FROM tasks WHERE id = ?', [taskId]);
+      if (taskRows.length === 0) {
+        return res.status(404).json({ success: false, message: 'Task not found' });
+      }
+    }
+
+    const [result] = await pool.query(
+      'INSERT INTO comments (task_id, user_id, content) VALUES (?, ?, ?)',
+      [taskId, req.user.id, content.trim()]
+    );
+
+    const [newCommentRows] = await pool.query(
+      `SELECT c.*, u.name as user_name, u.role as user_role
+       FROM comments c
+       JOIN users u ON c.user_id = u.id
+       WHERE c.id = ?`,
+      [result.insertId]
+    );
+
+    res.status(201).json({ success: true, data: newCommentRows[0] });
   } catch (err) {
     next(err);
   }

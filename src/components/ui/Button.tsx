@@ -18,6 +18,7 @@ import * as Haptics from 'expo-haptics';
 import { colors } from '../../theme/colors';
 import { typography } from '../../theme/typography';
 import { radius, spacing, shadows } from '../../theme/spacing';
+import { normalize } from '../../utils/responsive';
 
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 
@@ -154,15 +155,15 @@ const styles = StyleSheet.create({
     borderRadius: radius.md,
   },
   sm: {
-    height: 36,
+    height: normalize(36),
     paddingHorizontal: spacing.md,
   },
   md: {
-    height: 44,
+    height: normalize(44),
     paddingHorizontal: spacing.lg,
   },
   lg: {
-    height: 52,
+    height: normalize(52),
     paddingHorizontal: spacing.xl,
   },
   contentContainer: {

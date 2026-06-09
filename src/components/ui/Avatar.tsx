@@ -3,6 +3,7 @@ import { StyleSheet, Text, View } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { colors } from '../../theme/colors';
 import { typography } from '../../theme/typography';
+import { normalize } from '../../utils/responsive';
 
 interface AvatarProps {
   name: string;
@@ -38,10 +39,11 @@ export default function Avatar({ name, size = 40, fontSize }: AvatarProps) {
     return AVATAR_GRADIENTS[index];
   }, [name]);
 
-  const calculatedFontSize = fontSize || Math.max(10, Math.floor(size * 0.4));
+  const normalizedSize = normalize(size);
+  const calculatedFontSize = fontSize ? normalize(fontSize) : Math.max(8, Math.floor(normalizedSize * 0.4));
 
   return (
-    <View style={[styles.container, { width: size, height: size, borderRadius: size / 2 }]}>
+    <View style={[styles.container, { width: normalizedSize, height: normalizedSize, borderRadius: normalizedSize / 2 }]}>
       <LinearGradient
         colors={gradientColors as [string, string]}
         start={{ x: 0, y: 0 }}

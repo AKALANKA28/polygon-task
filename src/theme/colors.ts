@@ -40,17 +40,17 @@ export const colors = {
 
   // === NEUTRALS ===
   neutral: {
-    50: '#FAF8F5',
-    100: '#F5F2EC',
-    200: '#EAE6DF',
-    300: '#D6D1C7',
-    400: '#A39E93',
-    500: '#736F65',
-    600: '#525048',
-    700: '#403E38',
-    800: '#262522',
-    900: '#171614',
-    950: '#0C0C0A',
+    50: '#F9FAFB',
+    100: '#F3F4F6',
+    200: '#E5E7EB',
+    300: '#D1D5DB',
+    400: '#9CA3AF',
+    500: '#6B7280',
+    600: '#4B5563',
+    700: '#374151',
+    800: '#1F2937',
+    900: '#111827',
+    950: '#030712',
   },
 
   // === SEMANTIC ===
@@ -63,10 +63,10 @@ export const colors = {
 
   // === SURFACE (Light Mode) ===
   surface: {
-    background: '#FAF7F2',
+    background: '#F3F4F6',
     card: '#FFFFFF',
-    overlay: 'rgba(255, 122, 0, 0.06)',
-    border: '#EAE6DF',
+    overlay: 'rgba(139, 31, 204, 0.04)',
+    border: '#E5E7EB',
   },
 
   // === SURFACE (Dark Mode) ===

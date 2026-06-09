@@ -28,6 +28,7 @@ import { typography } from '../../../src/theme/typography';
 import { spacing, radius } from '../../../src/theme/spacing';
 import { useTheme } from '../../../src/theme/ThemeContext';
 import Svg, { Path } from 'react-native-svg';
+import { normalize } from '../../../src/utils/responsive';
 
 export default function ProfileScreen() {
   const dispatch = useAppDispatch();
@@ -90,16 +91,23 @@ export default function ProfileScreen() {
           <Avatar name={user?.name || 'User'} size={80} fontSize={30} />
           <Text style={styles.profileName}>{user?.name}</Text>
           <Text style={styles.profileEmail}>{user?.email}</Text>
-          <Badge
-            label="Employee"
-            backgroundColor={colors.brand.purple}
-            textColor={colors.white}
-            size="md"
-          />
         </View>
 
         {/* Edit Form */}
         <View style={styles.formSection}>
+          <Input
+            label="Email Address"
+            leftIcon="email"
+            value={user?.email}
+            editable={false}
+          />
+          <Input
+            label="Role"
+            leftIcon="user"
+            value={user?.role ? user.role.toUpperCase() : 'EMPLOYEE'}
+            editable={false}
+          />
+
           <Controller
             control={control}
             name="name"
@@ -198,7 +206,7 @@ export default function ProfileScreen() {
             variant="danger"
             onPress={() => setShowLogoutModal(true)}
             icon={
-              <Svg width={18} height={18} viewBox="0 0 24 24" fill="none" stroke={colors.semantic.error} strokeWidth={2}>
+              <Svg width={normalize(18)} height={normalize(18)} viewBox="0 0 24 24" fill="none" stroke={colors.semantic.error} strokeWidth={2}>
                 <Path d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" strokeLinecap="round" strokeLinejoin="round" />
               </Svg>
             }
@@ -211,11 +219,15 @@ export default function ProfileScreen() {
         isVisible={showLogoutModal}
         onBackdropPress={() => setShowLogoutModal(false)}
         backdropOpacity={0.5}
-        animationIn="fadeInUp"
-        animationOut="fadeOutDown"
+        animationIn="slideInUp"
+        animationOut="slideOutDown"
         style={styles.modal}
+        useNativeDriver={true}
+        hideModalContentWhileAnimating={true}
+        backdropTransitionOutTiming={0}
       >
         <View style={styles.modalContent}>
+          <View style={styles.dragHandle} />
           <Text style={styles.modalTitle}>Sign Out</Text>
           <Text style={styles.modalMessage}>Are you sure you want to sign out?</Text>
           <View style={styles.modalButtons}>
@@ -250,7 +262,7 @@ const getStyles = (isDark: boolean, themeColors: any) =>
       alignItems: 'center', paddingVertical: spacing.xl, gap: spacing.sm,
     },
     profileName: {
-      fontFamily: typography.fonts.bold, fontSize: 22, color: themeColors.text,
+      fontFamily: typography.fonts.bold, fontSize: normalize(22), color: themeColors.text,
     },
     profileEmail: {
       fontFamily: typography.fonts.regular, fontSize: typography.sizes.base, color: themeColors.textSecondary,
@@ -295,7 +307,7 @@ const getStyles = (isDark: boolean, themeColors: any) =>
     },
     themeOption: {
       flex: 1,
-      height: 40,
+      height: normalize(40),
       borderRadius: radius.sm,
       borderWidth: 1.5,
       borderColor: themeColors.border,
@@ -319,6 +331,14 @@ const getStyles = (isDark: boolean, themeColors: any) =>
     },
     divider: {
       height: 1, backgroundColor: themeColors.border, marginBottom: spacing.lg,
+    },
+    dragHandle: {
+      width: normalize(40),
+      height: normalize(5),
+      borderRadius: normalize(3),
+      backgroundColor: isDark ? colors.neutral[700] : colors.neutral[300],
+      alignSelf: 'center',
+      marginBottom: spacing.base,
     },
     modal: { justifyContent: 'flex-end', margin: 0 },
     modalContent: {

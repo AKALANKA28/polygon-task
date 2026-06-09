@@ -12,5 +12,7 @@ router.get('/:id', taskController.getById);
 router.post('/', roleCheck('admin'), taskController.create);
 router.put('/:id', taskController.update);
 router.delete('/:id', roleCheck('admin'), taskController.delete);
+router.get('/:id/comments', taskController.getComments);
+router.post('/:id/comments', taskController.addComment);
 
 module.exports = router;

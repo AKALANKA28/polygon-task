@@ -9,6 +9,7 @@ import { formatDate, formatPriority } from '../../utils/formatters';
 import type { Task } from '../../types/task.types';
 import Svg, { Path } from 'react-native-svg';
 import { useTheme } from '../../theme/ThemeContext';
+import { normalize } from '../../utils/responsive';
 
 interface TaskCardProps {
   task: Task;
@@ -69,13 +70,13 @@ export default function TaskCard({ task, onPress, index = 0 }: TaskCardProps) {
                 {formattedPriorityLabel}
               </Text>
             </View>
-            <TouchableOpacity style={styles.moreButton} activeOpacity={0.6}>
-              <Svg width={18} height={18} viewBox="0 0 24 24" fill="none" stroke={themeColors.textSecondary} strokeWidth={2.5}>
+            <View style={styles.moreButton}>
+              <Svg width={normalize(18)} height={normalize(18)} viewBox="0 0 24 24" fill="none" stroke={themeColors.textSecondary} strokeWidth={2.5}>
                 <Path d="M12 12m-1 0a1 1 0 102 0 1 1 0 10-2 0" />
                 <Path d="M19 12m-1 0a1 1 0 102 0 1 1 0 10-2 0" />
                 <Path d="M5 12m-1 0a1 1 0 102 0 1 1 0 10-2 0" />
               </Svg>
-            </TouchableOpacity>
+            </View>
           </View>
 
           {/* Title */}
@@ -115,9 +116,13 @@ export default function TaskCard({ task, onPress, index = 0 }: TaskCardProps) {
               </Text>
             </View>
 
-            {task.assignee ? (
+            {task.assignees && task.assignees.length > 0 ? (
               <View style={styles.assigneeWrapper}>
-                <Avatar name={task.assignee.name} size={24} />
+                <AvatarStack assignees={task.assignees} size={normalize(24)} />
+              </View>
+            ) : task.assignee ? (
+              <View style={styles.assigneeWrapper}>
+                <Avatar name={task.assignee.name} size={normalize(24)} />
               </View>
             ) : null}
           </View>
@@ -129,7 +134,7 @@ export default function TaskCard({ task, onPress, index = 0 }: TaskCardProps) {
 
 const SvgCalendarIcon = ({ color }: { color: string }) => (
   <View style={styles.calendarIcon}>
-    <Svg width={14} height={14} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth={2}>
+    <Svg width={normalize(14)} height={normalize(14)} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth={2}>
       <Path d="M19 4H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2z" strokeLinecap="round" strokeLinejoin="round" />
       <Path d="M16 2v4M8 2v4M3 10h18" strokeLinecap="round" strokeLinejoin="round" />
     </Svg>
@@ -174,7 +179,7 @@ const styles = StyleSheet.create({
     fontFamily: typography.fonts.bold,
     fontSize: typography.sizes.md + 1,
     marginBottom: spacing.xs,
-    lineHeight: 24,
+    lineHeight: normalize(24),
   },
   titleCompleted: {
     textDecorationLine: 'line-through',
@@ -183,7 +188,7 @@ const styles = StyleSheet.create({
   description: {
     fontFamily: typography.fonts.regular,
     fontSize: typography.sizes.sm + 1,
-    lineHeight: 20,
+    lineHeight: normalize(20),
     marginBottom: spacing.sm,
   },
   divider: {
@@ -211,3 +216,37 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
 });
+
+const AvatarStack = ({ assignees, size = 24 }: { assignees: any[], size?: number }) => {
+  if (!assignees || assignees.length === 0) return null;
+  const visible = assignees.slice(0, 3);
+  const remaining = assignees.length - visible.length;
+  
+  return (
+    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+      {visible.map((item, idx) => (
+        <View key={item.id} style={{ marginLeft: idx === 0 ? 0 : normalize(-8), zIndex: 10 - idx }}>
+          <Avatar name={item.name} size={size} />
+        </View>
+      ))}
+      {remaining > 0 && (
+        <View style={{
+          marginLeft: normalize(-8),
+          width: size,
+          height: size,
+          borderRadius: size / 2,
+          backgroundColor: colors.neutral[600],
+          justifyContent: 'center',
+          alignItems: 'center',
+          borderWidth: 1,
+          borderColor: colors.white,
+          zIndex: 0,
+        }}>
+          <Text style={{ color: colors.white, fontSize: size * 0.4, fontFamily: typography.fonts.bold }}>
+            +{remaining}
+          </Text>
+        </View>
+      )}
+    </View>
+  );
+};

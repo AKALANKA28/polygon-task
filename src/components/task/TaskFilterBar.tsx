@@ -4,6 +4,7 @@ import { colors } from '../../theme/colors';
 import { typography } from '../../theme/typography';
 import { radius, spacing } from '../../theme/spacing';
 import { useTheme } from '../../theme/ThemeContext';
+import { normalize } from '../../utils/responsive';
 import type { TaskStatus, TaskPriority } from '../../types/task.types';
 
 interface TaskFilterBarProps {
@@ -38,9 +39,9 @@ export default function TaskFilterBar({
   const getPillStyle = (isSelected: boolean) => {
     if (isSelected) {
       return {
-        bg: isDark ? colors.white : colors.neutral[900],
-        border: isDark ? colors.white : colors.neutral[900],
-        text: isDark ? colors.black : colors.white,
+        bg: isDark ? '#FFFFFF' : '#171614',
+        border: isDark ? '#FFFFFF' : '#171614',
+        text: isDark ? '#171614' : '#FFFFFF',
         font: typography.fonts.semiBold,
       };
     }
@@ -148,7 +149,7 @@ const styles = StyleSheet.create({
     gap: spacing.xs + 2,
   },
   pill: {
-    height: 34,
+    height: normalize(34),
     paddingHorizontal: spacing.md,
     borderRadius: radius.full,
     justifyContent: 'center',

@@ -21,3 +21,19 @@ export interface EmployeeWithTasks extends Employee {
 export interface EmployeeStats extends TaskStats {
   employeeId: number;
 }
+
+export interface CreateEmployeeDto {
+  name: string;
+  email: string;
+  department?: string;
+  phone?: string;
+  password?: string;
+}
+
+export interface UpdateEmployeeDto {
+  name?: string;
+  email?: string;
+  department?: string;
+  phone?: string;
+  password?: string;
+}
