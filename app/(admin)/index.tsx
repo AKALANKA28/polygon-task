@@ -332,7 +332,7 @@ export default function AdminDashboard() {
         {/* Compact Adaptive Header */}
         <GradientHeader
           height={120}
-          usePrimaryGradient={false}
+          usePrimaryGradient={true}
           leftContent={
             <View>
               <Text style={styles.greetingText}>{greeting}</Text>
@@ -342,7 +342,7 @@ export default function AdminDashboard() {
           rightContent={
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 14 }}>
               <TouchableOpacity onPress={toggleTheme} activeOpacity={0.7} style={styles.themeButton}>
-                <Svg width={normalize(20)} height={normalize(20)} viewBox="0 0 24 24" fill="none" stroke={themeColors.text} strokeWidth={2}>
+                <Svg width={normalize(20)} height={normalize(20)} viewBox="0 0 24 24" fill="none" stroke={colors.white} strokeWidth={2}>
                   {isDark ? (
                     <Path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42M12 7a5 5 0 100 10 5 5 0 000-10z" strokeLinecap="round" strokeLinejoin="round" />
                   ) : (
@@ -824,12 +824,12 @@ const getStyles = (isDark: boolean, themeColors: any) => StyleSheet.create({
   greetingText: {
     fontFamily: typography.fonts.regular,
     fontSize: typography.sizes.base,
-    color: themeColors.textSecondary,
+    color: 'rgba(255, 255, 255, 0.75)',
   },
   nameText: {
     fontFamily: typography.fonts.bold,
     fontSize: normalize(22),
-    color: themeColors.text,
+    color: colors.white,
     marginTop: normalize(2),
   },
   themeButton: {
