@@ -81,7 +81,7 @@ export default function AllTasksScreen() {
 
   return (
     <View style={styles.container}>
-      <GradientHeader title="All Tasks" height={100} />
+      <GradientHeader title="All Tasks" subtitle="Manage and assign work" />
 
       <View style={styles.content}>
         <TaskSearchBar value={searchQuery} onChangeText={handleSearchChange} />

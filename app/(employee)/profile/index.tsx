@@ -84,7 +84,7 @@ export default function ProfileScreen() {
         contentContainerStyle={styles.scrollContent}
         keyboardShouldPersistTaps="handled"
       >
-        <GradientHeader title="My Profile" height={140} />
+        <GradientHeader title="My Profile" subtitle="Manage personal settings" />
 
         {/* Profile Section */}
         <View style={styles.profileSection}>

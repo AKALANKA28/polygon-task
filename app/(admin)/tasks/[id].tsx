@@ -115,13 +115,12 @@ export default function TaskDetailScreen() {
   if (!task) {
     return (
       <View style={styles.container}>
-        <GradientHeader title="Task Detail" height={120}>
-          <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
-            <Svg width={20} height={20} viewBox="0 0 24 24" fill="none" stroke={themeColors.text} strokeWidth={2}>
-              <Path d="M15 19l-7-7 7-7" strokeLinecap="round" strokeLinejoin="round" />
-            </Svg>
-          </TouchableOpacity>
-        </GradientHeader>
+        <GradientHeader
+          title="Task Detail"
+          subtitle="Loading task info..."
+          showBackButton={true}
+          onBackPress={() => router.back()}
+        />
         <View style={styles.loadingContainer}>
           <Text style={styles.loadingText}>Loading...</Text>
         </View>
@@ -134,30 +133,19 @@ export default function TaskDetailScreen() {
 
   return (
     <View style={styles.container}>
-      <GradientHeader height={normalize(160)} leftContent={
-            <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
-              <Svg width={normalize(20)} height={normalize(20)} viewBox="0 0 24 24" fill="none" stroke={themeColors.text} strokeWidth={2}>
-                <Path d="M19 12H5M12 19l-7-7 7-7" strokeLinecap="round" strokeLinejoin="round" />
-              </Svg>
-            </TouchableOpacity>
-          }
-          rightContent={
-            <TouchableOpacity onPress={handleDelete} style={styles.backButton}>
-              <Svg width={normalize(20)} height={normalize(20)} viewBox="0 0 24 24" fill="none" stroke={themeColors.text} strokeWidth={2}>
-                <Path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2M10 11v6M14 11v6" strokeLinecap="round" strokeLinejoin="round" />
-              </Svg>
-            </TouchableOpacity>
-          }>
-        <View style={styles.headerTitleRow}>
-          <Text style={styles.headerTitle} numberOfLines={2}>{task.title}</Text>
-          <Badge
-            label={formatPriority(task.priority)}
-            backgroundColor={priorityColors.bg}
-            textColor={priorityColors.text}
-            borderColor={priorityColors.border}
-          />
-        </View>
-      </GradientHeader>
+      <GradientHeader
+        title={task.title}
+        subtitle="Task details and discussion"
+        showBackButton={true}
+        onBackPress={() => router.back()}
+        rightContent={
+          <TouchableOpacity onPress={handleDelete} style={styles.backButton}>
+            <Svg width={normalize(20)} height={normalize(20)} viewBox="0 0 24 24" fill="none" stroke={colors.white} strokeWidth={2}>
+              <Path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2M10 11v6M14 11v6" strokeLinecap="round" strokeLinejoin="round" />
+            </Svg>
+          </TouchableOpacity>
+        }
+      />
 
       <ScrollView
         style={styles.contentCard}
@@ -192,6 +180,16 @@ export default function TaskDetailScreen() {
         </View>
 
         <View style={styles.detailsSection}>
+          <View style={styles.detailRow}>
+            <Text style={styles.detailLabel}>Priority</Text>
+            <Badge
+              label={formatPriority(task.priority)}
+              backgroundColor={priorityColors.bg}
+              textColor={priorityColors.text}
+              borderColor={priorityColors.border}
+            />
+          </View>
+
           {task.assignees && task.assignees.length > 0 ? (
             <View style={styles.detailRow}>
               <Text style={styles.detailLabel}>Assigned to</Text>

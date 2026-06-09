@@ -114,13 +114,12 @@ export default function EmployeeTaskDetailScreen() {
   if (!task) {
     return (
       <View style={styles.container}>
-        <GradientHeader title="Task Detail" height={normalize(120)}>
-          <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
-            <Svg width={normalize(20)} height={normalize(20)} viewBox="0 0 24 24" fill="none" stroke={themeColors.text} strokeWidth={2}>
-              <Path d="M15 19l-7-7 7-7" strokeLinecap="round" strokeLinejoin="round" />
-            </Svg>
-          </TouchableOpacity>
-        </GradientHeader>
+        <GradientHeader
+          title="Task Detail"
+          subtitle="Loading task info..."
+          showBackButton={true}
+          onBackPress={() => router.back()}
+        />
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color={colors.primary.DEFAULT} />
         </View>
@@ -139,23 +138,13 @@ export default function EmployeeTaskDetailScreen() {
 
   return (
     <View style={styles.container}>
-      <GradientHeader height={normalize(160)}>
-        <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
-          <Svg width={normalize(20)} height={normalize(20)} viewBox="0 0 24 24" fill="none" stroke={themeColors.text} strokeWidth={2}>
-            <Path d="M15 19l-7-7 7-7" strokeLinecap="round" strokeLinejoin="round" />
-          </Svg>
-          <Text style={styles.backText}>My Tasks</Text>
-        </TouchableOpacity>
-        <View style={styles.headerContent}>
-          <Text style={styles.headerTitle} numberOfLines={2}>{task.title}</Text>
-          <Badge
-            label={formatPriority(task.priority)}
-            backgroundColor={priorityColors.bg}
-            textColor={priorityColors.text}
-            borderColor={priorityColors.border}
-          />
-        </View>
-      </GradientHeader>
+      <GradientHeader
+        title={task.title}
+        subtitle="Task details and status update"
+        showBackButton={true}
+        backLabel="My Tasks"
+        onBackPress={() => router.back()}
+      />
 
       <ScrollView
         style={styles.contentCard}
@@ -214,6 +203,16 @@ export default function EmployeeTaskDetailScreen() {
 
         {/* Details */}
         <View style={styles.detailsSection}>
+          <View style={styles.detailRow}>
+            <Text style={styles.detailLabel}>Priority</Text>
+            <Badge
+              label={formatPriority(task.priority)}
+              backgroundColor={priorityColors.bg}
+              textColor={priorityColors.text}
+              borderColor={priorityColors.border}
+            />
+          </View>
+
           {task.creator && (
             <View style={styles.detailRow}>
               <Text style={styles.detailLabel}>Assigned by</Text>
@@ -332,13 +331,6 @@ export default function EmployeeTaskDetailScreen() {
 const getStyles = (isDark: boolean, themeColors: any) =>
   StyleSheet.create({
     container: { flex: 1, backgroundColor: themeColors.background },
-    backButton: { flexDirection: 'row', alignItems: 'center', gap: spacing.xs },
-    backText: { fontFamily: typography.fonts.medium, fontSize: typography.sizes.base, color: themeColors.text },
-    headerContent: {
-      flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start',
-      marginTop: spacing.md, gap: spacing.md,
-    },
-    headerTitle: { flex: 1, fontFamily: typography.fonts.bold, fontSize: typography.sizes.xl, color: themeColors.text },
     contentCard: {
       flex: 1, backgroundColor: themeColors.card, marginTop: -20,
       borderTopLeftRadius: radius['2xl'], borderTopRightRadius: radius['2xl'],

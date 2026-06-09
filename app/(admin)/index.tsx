@@ -332,6 +332,7 @@ export default function AdminDashboard() {
         {/* Compact Adaptive Header */}
         <GradientHeader
           height={120}
+          usePrimaryGradient={false}
           leftContent={
             <View>
               <Text style={styles.greetingText}>{greeting}</Text>

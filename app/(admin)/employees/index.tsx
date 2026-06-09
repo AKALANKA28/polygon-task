@@ -223,7 +223,7 @@ export default function EmployeesScreen() {
 
   return (
     <View style={[styles.container, { backgroundColor: themeColors.background }]}>
-      <GradientHeader title="Employees" subtitle="Track team progress" height={140} />
+      <GradientHeader title="Employees" subtitle="Track team progress" />
 
       <ScrollView
         style={styles.content}

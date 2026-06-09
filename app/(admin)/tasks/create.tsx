@@ -127,17 +127,13 @@ export default function CreateTaskScreen() {
       style={styles.container}
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
-      <GradientHeader height={120}>
-        <View style={styles.headerRow}>
-          <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
-            <Svg width={20} height={20} viewBox="0 0 24 24" fill="none" stroke={colors.white} strokeWidth={2}>
-              <Path d="M15 19l-7-7 7-7" strokeLinecap="round" strokeLinejoin="round" />
-            </Svg>
-            <Text style={styles.backText}>Tasks</Text>
-          </TouchableOpacity>
-        </View>
-        <Text style={styles.headerTitle}>Create Task</Text>
-      </GradientHeader>
+      <GradientHeader
+        title="Create Task"
+        subtitle="Assign work to team members"
+        showBackButton={true}
+        backLabel="Tasks"
+        onBackPress={() => router.back()}
+      />
 
       <ScrollView
         style={styles.form}
@@ -287,26 +283,6 @@ const getStyles = (isDark: boolean, themeColors: any) =>
     container: {
       flex: 1,
       backgroundColor: themeColors.background,
-    },
-    headerRow: {
-      flexDirection: 'row',
-      alignItems: 'center',
-    },
-    backButton: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      gap: spacing.xs,
-    },
-    backText: {
-      fontFamily: typography.fonts.medium,
-      fontSize: typography.sizes.base,
-      color: colors.white,
-    },
-    headerTitle: {
-      fontFamily: typography.fonts.bold,
-      fontSize: typography.sizes['2xl'],
-      color: colors.white,
-      marginTop: spacing.sm,
     },
     form: {
       flex: 1,

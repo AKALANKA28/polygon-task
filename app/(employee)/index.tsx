@@ -166,6 +166,7 @@ export default function EmployeeDashboard() {
       >
         <GradientHeader
           height={120}
+          usePrimaryGradient={false}
           leftContent={
             <View>
               <Text style={styles.greetingText}>{greeting}</Text>
