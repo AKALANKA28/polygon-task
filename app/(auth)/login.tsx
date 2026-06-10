@@ -217,7 +217,7 @@ const getStyles = (isDark: boolean, themeColors: any) =>
       flexGrow: 1,
     },
     header: {
-      minHeight: screenHeight * 0.48,
+      minHeight: screenHeight * 0.58,
       justifyContent: 'center',
       alignItems: 'center',
       overflow: 'hidden',
@@ -275,7 +275,7 @@ const getStyles = (isDark: boolean, themeColors: any) =>
       borderTopRightRadius: 32,
       marginTop: -32,
       paddingHorizontal: 28,
-      paddingTop: 36,
+      paddingTop: 28,
       paddingBottom: 24,
     },
     errorCard: {
