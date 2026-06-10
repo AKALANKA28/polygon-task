@@ -13,7 +13,7 @@ module.exports = {
           amber: '#FFB800',
         },
         primary: '#FF1F8E',
-        surface: '#F8F7FF',
+        surface: '#F3F4F6',
         card: '#FFFFFF',
       },
       fontFamily: {

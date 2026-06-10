@@ -9,6 +9,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import { colors } from '../../theme/colors';
 import { radius, spacing } from '../../theme/spacing';
+import { useTheme } from '../../theme/ThemeContext';
 
 interface SkeletonProps {
   type: 'stats' | 'card' | 'list';
@@ -17,6 +18,7 @@ interface SkeletonProps {
 
 export default function Skeleton({ type, count = 1 }: SkeletonProps) {
   const opacity = useSharedValue(0.4);
+  const { isDark, themeColors } = useTheme();
 
   useEffect(() => {
     opacity.value = withRepeat(
@@ -33,10 +35,12 @@ export default function Skeleton({ type, count = 1 }: SkeletonProps) {
     opacity: opacity.value,
   }));
 
+  const placeholderBg = isDark ? colors.neutral[800] : colors.neutral[200];
+
   const renderStats = () => (
     <View style={styles.statsContainer}>
       {[1, 2, 3].map((i) => (
-        <Animated.View key={i} style={[styles.statBox, shimmerStyle]} />
+        <Animated.View key={i} style={[styles.statBox, { backgroundColor: placeholderBg }, shimmerStyle]} />
       ))}
     </View>
   );
@@ -44,17 +48,17 @@ export default function Skeleton({ type, count = 1 }: SkeletonProps) {
   const renderCard = () => (
     <View style={styles.listContainer}>
       {Array.from({ length: count }).map((_, i) => (
-        <Animated.View key={i} style={[styles.cardBox, shimmerStyle]}>
+        <Animated.View key={i} style={[styles.cardBox, { backgroundColor: themeColors.card, borderColor: themeColors.border }, shimmerStyle]}>
           <View style={styles.cardHeader}>
-            <View style={styles.avatarPlaceholder} />
+            <View style={[styles.avatarPlaceholder, { backgroundColor: placeholderBg }]} />
             <View style={styles.titleLines}>
-              <View style={styles.lineLong} />
-              <View style={styles.lineShort} />
+              <View style={[styles.lineLong, { backgroundColor: placeholderBg }]} />
+              <View style={[styles.lineShort, { backgroundColor: placeholderBg }]} />
             </View>
           </View>
           <View style={styles.cardBody}>
-            <View style={styles.lineFull} />
-            <View style={styles.lineMedium} />
+            <View style={[styles.lineFull, { backgroundColor: placeholderBg }]} />
+            <View style={[styles.lineMedium, { backgroundColor: placeholderBg }]} />
           </View>
         </Animated.View>
       ))}
@@ -64,11 +68,11 @@ export default function Skeleton({ type, count = 1 }: SkeletonProps) {
   const renderList = () => (
     <View style={styles.listContainer}>
       {Array.from({ length: count }).map((_, i) => (
-        <Animated.View key={i} style={[styles.listBox, shimmerStyle]}>
-          <View style={styles.avatarPlaceholder} />
+        <Animated.View key={i} style={[styles.listBox, { backgroundColor: themeColors.card, borderColor: themeColors.border }, shimmerStyle]}>
+          <View style={[styles.avatarPlaceholder, { backgroundColor: placeholderBg }]} />
           <View style={styles.listInfo}>
-            <View style={styles.lineMedium} />
-            <View style={styles.lineShort} />
+            <View style={[styles.lineMedium, { backgroundColor: placeholderBg }]} />
+            <View style={[styles.lineShort, { backgroundColor: placeholderBg }]} />
           </View>
         </Animated.View>
       ))}
@@ -96,17 +100,14 @@ const styles = StyleSheet.create({
   statBox: {
     width: 130,
     height: 100,
-    backgroundColor: colors.neutral[200],
     borderRadius: radius.lg,
   },
   listContainer: {
     gap: spacing.md,
   },
   cardBox: {
-    backgroundColor: colors.white,
     borderRadius: radius.md,
     borderWidth: 1.5,
-    borderColor: colors.surface.border,
     padding: spacing.base,
     gap: spacing.md,
   },
@@ -119,7 +120,6 @@ const styles = StyleSheet.create({
     width: 32,
     height: 32,
     borderRadius: 16,
-    backgroundColor: colors.neutral[200],
   },
   titleLines: {
     flex: 1,
@@ -128,13 +128,11 @@ const styles = StyleSheet.create({
   lineLong: {
     height: 12,
     width: '60%',
-    backgroundColor: colors.neutral[200],
     borderRadius: 6,
   },
   lineShort: {
     height: 8,
     width: '35%',
-    backgroundColor: colors.neutral[200],
     borderRadius: 4,
   },
   cardBody: {
@@ -143,20 +141,16 @@ const styles = StyleSheet.create({
   lineFull: {
     height: 10,
     width: '100%',
-    backgroundColor: colors.neutral[200],
     borderRadius: 5,
   },
   lineMedium: {
     height: 10,
     width: '75%',
-    backgroundColor: colors.neutral[200],
     borderRadius: 5,
   },
   listBox: {
-    backgroundColor: colors.white,
     borderRadius: radius.md,
     borderWidth: 1.5,
-    borderColor: colors.surface.border,
     padding: spacing.md,
     flexDirection: 'row',
     alignItems: 'center',

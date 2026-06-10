@@ -2,17 +2,18 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import * as Haptics from 'expo-haptics';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
+import { StatusBar, setStatusBarStyle } from 'expo-status-bar';
 import React, { useCallback, useEffect } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import {
-  Dimensions,
   Image,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
   StyleSheet,
   Text,
-  View
+  View,
+  useWindowDimensions,
 } from 'react-native';
 import Animated, {
   FadeInDown,
@@ -33,14 +34,17 @@ import { colors } from '../../src/theme/colors';
 import { radius, spacing } from '../../src/theme/spacing';
 import { typography } from '../../src/theme/typography';
 import { LoginFormData, loginSchema } from '../../src/utils/validators';
+import { useTheme } from '../../src/theme/ThemeContext';
 
-const { height: screenHeight } = Dimensions.get('window');
+
 
 export default function LoginScreen() {
   const dispatch = useAppDispatch();
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { isLoading, error, user } = useAppSelector((s) => s.auth);
+  const { isDark, themeColors } = useTheme();
+  const styles = getStyles(isDark, themeColors);
 
   // Shake animation for errors
   const shakeX = useSharedValue(0);
@@ -75,6 +79,13 @@ export default function LoginScreen() {
     }
   }, [user, router]);
 
+  useEffect(() => {
+    setStatusBarStyle('light');
+    return () => {
+      setStatusBarStyle(isDark ? 'light' : 'dark');
+    };
+  }, [isDark]);
+
   const shakeStyle = useAnimatedStyle(() => ({
     transform: [{ translateX: shakeX.value }],
   }));
@@ -97,45 +108,49 @@ export default function LoginScreen() {
   return (
     <KeyboardAvoidingView
       style={styles.container}
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      keyboardVerticalOffset={0}
+      behavior="padding"
+      keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
     >
-      <ScrollView
-        contentContainerStyle={styles.scrollContent}
-        keyboardShouldPersistTaps="handled"
-        showsVerticalScrollIndicator={false}
-        bounces={false}
+      <StatusBar style="light" />
+
+      {/* Gradient Header - Fixed at the top */}
+      <LinearGradient
+        colors={colors.primary.gradient as any}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+        style={[styles.header, { paddingTop: insets.top + spacing['2xl'] }]}
       >
-        {/* Gradient Header */}
-        <LinearGradient
-          colors={colors.primary.gradient as unknown as [string, string]}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 1 }}
-          style={[styles.header, { paddingTop: insets.top + spacing['2xl'] }]}
-        >
-          {/* Decorative circles */}
-          <View style={[styles.circle, styles.circleTopRight]} />
-          <View style={[styles.circle, styles.circleBottomLeft]} />
+        {/* Decorative circles */}
+        <View style={[styles.circle, styles.circleTopRight]} />
+        <View style={[styles.circle, styles.circleBottomLeft]} />
 
-          <Animated.View entering={FadeInDown.delay(200).duration(500)} style={styles.headerContent}>
-            {/* Logo placeholder */}
-            <View style={styles.logoContainer}>
-              <Image
-                source={require('../../assets/images/logo.png')}
-                style={{ width: 80, height: 80, borderRadius: 20 }}
-                resizeMode="contain"
-              />
-            </View>
-            <Text style={styles.welcomeText}>Welcome Back</Text>
-            <Text style={styles.subtitleText}>Sign in to your account</Text>
-          </Animated.View>
-        </LinearGradient>
+        <Animated.View entering={FadeInDown.delay(200).duration(500).springify()} style={styles.headerContent}>
+          {/* Logo placeholder */}
+          <View style={styles.logoContainer}>
+            <Image
+              source={require('../../assets/images/logo.png')}
+              style={{ width: 120, height: 120, borderRadius: 20 }}
+              resizeMode="contain"
+            />
+          </View>
+        </Animated.View>
+      </LinearGradient>
 
-        {/* Form Card */}
-        <Animated.View
-          entering={FadeInUp.delay(400).duration(500)}
-          style={styles.formCard}
+      {/* Form Card - Scrollable Content */}
+      <Animated.View
+        entering={FadeInUp.delay(400).duration(500).springify()}
+        style={styles.formCard}
+      >
+        <ScrollView
+          style={{ flexGrow: 0 }}
+          contentContainerStyle={styles.scrollContent}
+          keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
+          bounces={false}
         >
+          <Text style={styles.welcomeText}>Welcome Back</Text>
+          <Text style={styles.subtitleText}>Sign in to your account</Text>
+
           <Animated.View style={shakeStyle}>
             <Controller
               control={control}
@@ -198,127 +213,104 @@ export default function LoginScreen() {
               disabled={isLoading}
             />
           </View>
-
-          {/* Demo credentials hint */}
-          <View style={styles.hintContainer}>
-            <Text style={styles.hintTitle}>Demo Credentials</Text>
-            <Text style={styles.hintText}>Admin: admin@polygon.com</Text>
-            <Text style={styles.hintText}>Employee: jane@polygon.com</Text>
-            <Text style={styles.hintText}>Password: password123</Text>
-          </View>
-        </Animated.View>
-      </ScrollView>
+        </ScrollView>
+      </Animated.View>
     </KeyboardAvoidingView>
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: colors.surface.background,
-  },
-  scrollContent: {
-    flexGrow: 1,
-  },
-  header: {
-    minHeight: screenHeight * 0.38,
-    justifyContent: 'center',
-    alignItems: 'center',
-    overflow: 'hidden',
-    paddingBottom: spacing['3xl'],
-  },
-  circle: {
-    position: 'absolute',
-    width: 300,
-    height: 300,
-    borderRadius: 150,
-    backgroundColor: 'rgba(255,255,255,0.08)',
-  },
-  circleTopRight: {
-    top: -100,
-    right: -80,
-  },
-  circleBottomLeft: {
-    bottom: -150,
-    left: -100,
-  },
-  headerContent: {
-    alignItems: 'center',
-    zIndex: 1,
-  },
-  logoContainer: {
-    marginBottom: spacing.xl,
-  },
-  logoGlow: {
-    width: 80,
-    height: 80,
-    borderRadius: 20,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  logoLetter: {
-    fontFamily: typography.fonts.extraBold,
-    fontSize: 40,
-    color: colors.white,
-  },
-  welcomeText: {
-    fontFamily: typography.fonts.bold,
-    fontSize: 28,
-    color: colors.white,
-  },
-  subtitleText: {
-    fontFamily: typography.fonts.regular,
-    fontSize: typography.sizes.base,
-    color: 'rgba(255,255,255,0.75)',
-    marginTop: spacing.xs,
-  },
-  formCard: {
-    flex: 1,
-    backgroundColor: colors.surface.background,
-    borderTopLeftRadius: 32,
-    borderTopRightRadius: 32,
-    marginTop: -32,
-    paddingHorizontal: 28,
-    paddingTop: 36,
-    paddingBottom: 24,
-  },
-  errorCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#FFF5F5',
-    borderWidth: 1,
-    borderColor: '#FECACA',
-    borderRadius: radius.md,
-    padding: spacing.md,
-    marginBottom: spacing.base,
-    gap: spacing.sm,
-  },
-  errorText: {
-    flex: 1,
-    fontFamily: typography.fonts.medium,
-    fontSize: typography.sizes.sm + 1,
-    color: '#DC2626',
-  },
-  buttonContainer: {
-    marginTop: spacing.sm,
-  },
-  hintContainer: {
-    marginTop: spacing['2xl'],
-    padding: spacing.base,
-    backgroundColor: colors.surface.overlay,
-    borderRadius: radius.md,
-    alignItems: 'center',
-  },
-  hintTitle: {
-    fontFamily: typography.fonts.semiBold,
-    fontSize: typography.sizes.sm,
-    color: colors.brand.purple,
-    marginBottom: spacing.sm,
-  },
-  hintText: {
-    fontFamily: typography.fonts.regular,
-    fontSize: typography.sizes.sm,
-    color: colors.neutral[500],
-    marginTop: 2,
-  },
-});
+const getStyles = (isDark: boolean, themeColors: any) =>
+  StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: themeColors.background,
+    },
+    scrollContent: {
+      paddingHorizontal: 28,
+      paddingTop: 28,
+      paddingBottom: 24,
+      flexGrow: 1,
+    },
+    header: {
+      flex: 1,
+      justifyContent: 'center',
+      alignItems: 'center',
+      overflow: 'hidden',
+      paddingBottom: spacing['3xl'],
+    },
+    circle: {
+      position: 'absolute',
+      width: 300,
+      height: 300,
+      borderRadius: 150,
+      backgroundColor: 'rgba(255,255,255,0.08)',
+    },
+    circleTopRight: {
+      top: -100,
+      right: -80,
+    },
+    circleBottomLeft: {
+      bottom: -150,
+      left: -100,
+    },
+    headerContent: {
+      alignItems: 'center',
+      zIndex: 1,
+    },
+    logoContainer: {
+      marginBottom: spacing.xl,
+    },
+    logoGlow: {
+      width: 80,
+      height: 80,
+      borderRadius: 20,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    logoLetter: {
+      fontFamily: typography.fonts.extraBold,
+      fontSize: 40,
+      color: colors.white,
+    },
+    welcomeText: {
+      fontFamily: typography.fonts.bold,
+      fontSize: 28,
+      color: themeColors.text,
+      textAlign: 'center',
+    },
+    subtitleText: {
+      fontFamily: typography.fonts.regular,
+      fontSize: typography.sizes.base,
+      color: themeColors.textSecondary,
+      marginTop: spacing.xs,
+      marginBottom: spacing.xl,
+      textAlign: 'center',
+    },
+    formCard: {
+      backgroundColor: themeColors.background,
+      borderTopLeftRadius: 32,
+      borderTopRightRadius: 32,
+      marginTop: -32,
+    },
+    errorCard: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      backgroundColor: isDark ? 'rgba(239, 68, 68, 0.15)' : '#FFF5F5',
+      borderWidth: 1,
+      borderColor: isDark ? '#EF4444' : '#FECACA',
+      borderRadius: radius.md,
+      padding: spacing.md,
+      marginBottom: spacing.base,
+      gap: spacing.sm,
+    },
+    errorText: {
+      flex: 1,
+      fontFamily: typography.fonts.medium,
+      fontSize: typography.sizes.sm + 1,
+      color: isDark ? colors.neutral[200] : '#DC2626',
+    },
+    buttonContainer: {
+      marginTop: spacing.sm,
+    },
+
+  });

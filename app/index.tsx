@@ -1,7 +1,7 @@
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 import React, { useEffect } from 'react';
-import { Dimensions, Image, StyleSheet, View } from 'react-native';
+import { Image, StyleSheet, View, useWindowDimensions } from 'react-native';
 import Animated, {
   Easing,
   useAnimatedStyle,
@@ -16,12 +16,13 @@ import { colors } from '../src/theme/colors';
 import { spacing } from '../src/theme/spacing';
 import { typography } from '../src/theme/typography';
 
-const { width } = Dimensions.get('window');
+
 
 export default function SplashScreen() {
   const router = useRouter();
   const dispatch = useAppDispatch();
   const { user, isInitialized } = useAppSelector((s) => s.auth);
+  const { width } = useWindowDimensions();
 
   // Logo pulse animation
   const logoScale = useSharedValue(1);

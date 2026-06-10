@@ -8,19 +8,23 @@ import Animated, {
 import { LinearGradient } from 'expo-linear-gradient';
 import { colors } from '../../theme/colors';
 import { radius } from '../../theme/spacing';
+import { useTheme } from '../../theme/ThemeContext';
 
 interface ProgressBarProps {
   progress: number; // 0 to 1
   height?: number;
-  gradientColors?: [string, string];
+  gradientColors?: string[];
 }
 
 export default function ProgressBar({
   progress,
   height = 8,
-  gradientColors = colors.primary.gradient as unknown as [string, string],
+  gradientColors,
 }: ProgressBarProps) {
   const animatedProgress = useSharedValue(0);
+  const { isDark } = useTheme();
+
+  const activeGradient = gradientColors || (isDark ? ['#FF6B1A', '#FFB800'] : colors.primary.gradient);
 
   useEffect(() => {
     // Keep progress bounded between 0 and 1
@@ -33,10 +37,10 @@ export default function ProgressBar({
   }));
 
   return (
-    <View style={[styles.container, { height, borderRadius: height / 2 }]}>
+    <View style={[styles.container, { height, borderRadius: height / 2, backgroundColor: isDark ? 'rgba(255,255,255,0.1)' : colors.neutral[200] }]}>
       <Animated.View style={[styles.bar, animatedStyle]}>
         <LinearGradient
-          colors={gradientColors}
+          colors={activeGradient as any}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 0 }}
           style={StyleSheet.absoluteFill}
@@ -49,7 +53,6 @@ export default function ProgressBar({
 const styles = StyleSheet.create({
   container: {
     width: '100%',
-    backgroundColor: colors.neutral[200],
     overflow: 'hidden',
   },
   bar: {

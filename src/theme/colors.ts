@@ -13,44 +13,44 @@ export const colors = {
     DEFAULT: '#FF1F8E',
     light: '#FF5BAD',
     dark: '#C4006A',
-    gradient: ['#FF1F8E', '#8B1FCC'] as const,
+    gradient: ['#3B0B24', '#1C0F30', '#0A0C16'] as const,
   },
 
   // === TASK STATUS COLORS ===
   status: {
     pending: {
-      bg: '#FFF7E6',
-      text: '#B76E00',
-      dot: '#FFB800',
-      border: '#FFD166',
+      bg: '#FFF8EE',
+      text: '#C27803',
+      dot: '#F59E0B',
+      border: 'rgba(245, 158, 11, 0.15)',
     },
     inProgress: {
-      bg: '#FFF0F7',
-      text: '#A0005E',
-      dot: '#FF1F8E',
-      border: '#FF80C4',
+      bg: '#EEF6FF',
+      text: '#0284C7',
+      dot: '#38BDF8',
+      border: 'rgba(56, 189, 248, 0.15)',
     },
     completed: {
-      bg: '#F0F0FF',
-      text: '#5A00A8',
-      dot: '#8B1FCC',
-      border: '#C084FC',
+      bg: '#F8F2FF',
+      text: '#7C3AED',
+      dot: '#A855F7',
+      border: 'rgba(168, 85, 247, 0.15)',
     },
   },
 
   // === NEUTRALS ===
   neutral: {
-    50: '#FAFAFA',
-    100: '#F5F5F5',
-    200: '#E5E5E5',
-    300: '#D4D4D4',
-    400: '#A3A3A3',
-    500: '#737373',
-    600: '#525252',
-    700: '#404040',
-    800: '#262626',
-    900: '#171717',
-    950: '#0A0A0A',
+    50: '#F9FAFB',
+    100: '#F3F4F6',
+    200: '#E5E7EB',
+    300: '#D1D5DB',
+    400: '#9CA3AF',
+    500: '#6B7280',
+    600: '#4B5563',
+    700: '#374151',
+    800: '#1F2937',
+    900: '#111827',
+    950: '#030712',
   },
 
   // === SEMANTIC ===
@@ -63,18 +63,18 @@ export const colors = {
 
   // === SURFACE (Light Mode) ===
   surface: {
-    background: '#F8F7FF',
+    background: '#F3F4F6',
     card: '#FFFFFF',
-    overlay: 'rgba(139, 31, 204, 0.06)',
-    border: '#EDE9FE',
+    overlay: 'rgba(139, 31, 204, 0.04)',
+    border: '#E5E7EB',
   },
 
   // === SURFACE (Dark Mode) ===
   surfaceDark: {
-    background: '#0D0D14',
-    card: '#1A1A2E',
+    background: '#0F0F12',
+    card: '#17171C',
     overlay: 'rgba(255, 31, 142, 0.08)',
-    border: '#2D2D4A',
+    border: '#27272F',
   },
 
   white: '#FFFFFF',

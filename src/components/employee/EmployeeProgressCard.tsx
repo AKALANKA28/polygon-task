@@ -1,18 +1,22 @@
 import React, { useMemo } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View, TouchableOpacity } from 'react-native';
 import { colors } from '../../theme/colors';
 import { typography } from '../../theme/typography';
 import { radius, spacing, shadows } from '../../theme/spacing';
 import Avatar from '../ui/Avatar';
-import Badge from '../ui/Badge';
 import ProgressBar from '../ui/ProgressBar';
 import type { Employee } from '../../types/employee.types';
+import { useTheme } from '../../theme/ThemeContext';
 
 interface EmployeeProgressCardProps {
   employee: Employee;
+  onPress?: () => void;
+  onLongPress?: () => void;
 }
 
-export default function EmployeeProgressCard({ employee }: EmployeeProgressCardProps) {
+export default function EmployeeProgressCard({ employee, onPress, onLongPress }: EmployeeProgressCardProps) {
+  const { isDark, themeColors } = useTheme();
+  
   const taskCount = employee.taskCount || 0;
   const completedCount = employee.completedCount || 0;
   const pendingCount = employee.pendingCount || 0;
@@ -28,59 +32,63 @@ export default function EmployeeProgressCard({ employee }: EmployeeProgressCardP
   }, [completionRate]);
 
   return (
-    <View style={[styles.card, shadows.sm]}>
+    <TouchableOpacity
+      activeOpacity={onPress || onLongPress ? 0.8 : 1}
+      onPress={onPress}
+      onLongPress={onLongPress}
+      delayLongPress={500}
+      style={[styles.card, { backgroundColor: themeColors.card, borderColor: themeColors.border }, shadows.sm]}
+    >
       {/* Employee Info Header */}
       <View style={styles.header}>
         <Avatar name={employee.name} size={48} />
         <View style={styles.info}>
-          <Text style={styles.name} numberOfLines={1}>
+          <Text style={[styles.name, { color: themeColors.text }]} numberOfLines={1}>
             {employee.name}
           </Text>
-          <Text style={styles.department} numberOfLines={1}>
+          <Text style={[styles.department, { color: themeColors.textSecondary }]} numberOfLines={1}>
             {employee.department || 'General'} • {employee.email}
           </Text>
         </View>
       </View>
 
       {/* Task Counts Summary Row */}
-      <View style={styles.statsRow}>
+      <View style={[styles.statsRow, { backgroundColor: isDark ? colors.surfaceDark.background : colors.surface.background }]}>
         <View style={styles.statItem}>
-          <Text style={[styles.statValue, { color: colors.neutral[900] }]}>{taskCount}</Text>
-          <Text style={styles.statLabel}>Assigned</Text>
+          <Text style={[styles.statValue, { color: themeColors.text }]}>{taskCount}</Text>
+          <Text style={[styles.statLabel, { color: themeColors.textSecondary }]}>Assigned</Text>
         </View>
-        <View style={[styles.statItem, styles.borderLeft]}>
+        <View style={[styles.statItem, styles.borderLeft, { borderLeftColor: themeColors.border }]}>
           <Text style={[styles.statValue, { color: colors.status.pending.text }]}>{pendingCount}</Text>
-          <Text style={styles.statLabel}>Pending</Text>
+          <Text style={[styles.statLabel, { color: themeColors.textSecondary }]}>Pending</Text>
         </View>
-        <View style={[styles.statItem, styles.borderLeft]}>
+        <View style={[styles.statItem, styles.borderLeft, { borderLeftColor: themeColors.border }]}>
           <Text style={[styles.statValue, { color: colors.status.inProgress.text }]}>{inProgressCount}</Text>
-          <Text style={styles.statLabel}>In Progress</Text>
+          <Text style={[styles.statLabel, { color: themeColors.textSecondary }]}>In Progress</Text>
         </View>
-        <View style={[styles.statItem, styles.borderLeft]}>
+        <View style={[styles.statItem, styles.borderLeft, { borderLeftColor: themeColors.border }]}>
           <Text style={[styles.statValue, { color: colors.status.completed.text }]}>{completedCount}</Text>
-          <Text style={styles.statLabel}>Completed</Text>
+          <Text style={[styles.statLabel, { color: themeColors.textSecondary }]}>Completed</Text>
         </View>
       </View>
 
       {/* Progress Section */}
       <View style={styles.progressContainer}>
         <View style={styles.progressHeader}>
-          <Text style={styles.progressLabel}>Completion Rate</Text>
+          <Text style={[styles.progressLabel, { color: themeColors.textSecondary }]}>Completion Rate</Text>
           <Text style={styles.progressPercentage}>{formattedPercentage}</Text>
         </View>
         <ProgressBar progress={completionRate} height={6} />
       </View>
-    </View>
+    </TouchableOpacity>
   );
 }
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: colors.white,
     borderRadius: radius.lg,
     padding: spacing.base,
     borderWidth: 1,
-    borderColor: colors.surface.border,
     marginBottom: spacing.base,
   },
   header: {
@@ -95,17 +103,14 @@ const styles = StyleSheet.create({
   name: {
     fontFamily: typography.fonts.semiBold,
     fontSize: typography.sizes.base + 2,
-    color: colors.neutral[900],
   },
   department: {
     fontFamily: typography.fonts.regular,
     fontSize: typography.sizes.sm,
-    color: colors.neutral[500],
     marginTop: 2,
   },
   statsRow: {
     flexDirection: 'row',
-    backgroundColor: colors.surface.background,
     borderRadius: radius.md,
     paddingVertical: spacing.sm,
     marginBottom: spacing.base,
@@ -117,7 +122,6 @@ const styles = StyleSheet.create({
   },
   borderLeft: {
     borderLeftWidth: 1,
-    borderLeftColor: colors.neutral[200],
   },
   statValue: {
     fontFamily: typography.fonts.bold,
@@ -126,7 +130,6 @@ const styles = StyleSheet.create({
   statLabel: {
     fontFamily: typography.fonts.medium,
     fontSize: typography.sizes.xs,
-    color: colors.neutral[500],
     marginTop: 2,
   },
   progressContainer: {
@@ -141,7 +144,6 @@ const styles = StyleSheet.create({
   progressLabel: {
     fontFamily: typography.fonts.medium,
     fontSize: typography.sizes.xs + 1,
-    color: colors.neutral[500],
   },
   progressPercentage: {
     fontFamily: typography.fonts.bold,

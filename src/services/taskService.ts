@@ -1,5 +1,5 @@
 import { api } from './api';
-import { Task, CreateTaskDto, UpdateTaskDto, TaskStats } from '../types/task.types';
+import { Task, CreateTaskDto, UpdateTaskDto, TaskStats, TaskComment } from '../types/task.types';
 
 export const taskService = {
   getAll: async (): Promise<Task[]> => {
@@ -29,5 +29,15 @@ export const taskService = {
   getStats: async (): Promise<TaskStats> => {
     const response = await api.get('/tasks/stats');
     return (response as unknown as { data: TaskStats }).data;
+  },
+
+  getComments: async (taskId: number): Promise<TaskComment[]> => {
+    const response = await api.get(`/tasks/${taskId}/comments`);
+    return (response as unknown as { data: TaskComment[] }).data;
+  },
+
+  addComment: async (taskId: number, content: string): Promise<TaskComment> => {
+    const response = await api.post(`/tasks/${taskId}/comments`, { content });
+    return (response as unknown as { data: TaskComment }).data;
   },
 };

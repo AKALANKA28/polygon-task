@@ -5,7 +5,7 @@ import { FlashList } from '@shopify/flash-list';
 const TypedFlashList = FlashList as any;
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import GradientHeader from '../../../src/components/ui/GradientHeader';
+import Header from '../../../src/components/ui/Header';
 import TaskCard from '../../../src/components/task/TaskCard';
 import TaskSearchBar from '../../../src/components/task/TaskSearchBar';
 import TaskFilterBar from '../../../src/components/task/TaskFilterBar';
@@ -16,6 +16,7 @@ import { fetchTasks, setSearchQuery, setFilterStatus, setFilterPriority, selectF
 import { colors } from '../../../src/theme/colors';
 import { spacing } from '../../../src/theme/spacing';
 import type { Task, TaskStatus, TaskPriority } from '../../../src/types/task.types';
+import { useTheme } from '../../../src/theme/ThemeContext';
 
 export default function AllTasksScreen() {
   const dispatch = useAppDispatch();
@@ -24,6 +25,9 @@ export default function AllTasksScreen() {
   const { isLoading, searchQuery, filterStatus, filterPriority } = useAppSelector((s) => s.tasks);
   const filteredTasks = useAppSelector(selectFilteredTasks);
   const [refreshing, setRefreshing] = useState(false);
+
+  const { isDark, themeColors } = useTheme();
+  const styles = getStyles(isDark, themeColors);
 
   useEffect(() => {
     dispatch(fetchTasks());
@@ -35,9 +39,14 @@ export default function AllTasksScreen() {
     setRefreshing(false);
   }, [dispatch]);
 
+  const lastPressedTime = React.useRef(0);
+
   const handleTaskPress = useCallback(
     (task: Task) => {
-      router.push(`/(admin)/tasks/${task.id}`);
+      const now = Date.now();
+      if (now - lastPressedTime.current < 800) return;
+      lastPressedTime.current = now;
+      router.navigate(`/(admin)/tasks/${task.id}`);
     },
     [router]
   );
@@ -72,7 +81,7 @@ export default function AllTasksScreen() {
 
   return (
     <View style={styles.container}>
-      <GradientHeader title="All Tasks" height={120} />
+      <Header title="All Tasks" />
 
       <View style={styles.content}>
         <TaskSearchBar value={searchQuery} onChangeText={handleSearchChange} />
@@ -117,17 +126,19 @@ export default function AllTasksScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: colors.surface.background,
-  },
-  content: {
-    flex: 1,
-    paddingHorizontal: spacing.base,
-    paddingTop: spacing.base,
-  },
-  filterContainer: {
-    marginTop: spacing.md,
-  },
-});
+const getStyles = (isDark: boolean, themeColors: any) =>
+  StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: themeColors.background,
+    },
+    content: {
+      flex: 1,
+      paddingHorizontal: spacing.base,
+      paddingTop: spacing.xs,
+    },
+    filterContainer: {
+      marginTop: spacing.sm,
+      marginBottom: spacing.sm,
+    },
+  });

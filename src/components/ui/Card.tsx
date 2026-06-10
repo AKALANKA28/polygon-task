@@ -2,6 +2,7 @@ import React from 'react';
 import { StyleSheet, View, StyleProp, ViewStyle } from 'react-native';
 import { colors } from '../../theme/colors';
 import { radius, spacing, shadows } from '../../theme/spacing';
+import { useTheme } from '../../theme/ThemeContext';
 
 interface CardProps {
   children: React.ReactNode;
@@ -11,8 +12,18 @@ interface CardProps {
 }
 
 export default function Card({ children, style, stripeColor }: CardProps) {
+  const { themeColors } = useTheme();
+
   return (
-    <View style={[styles.card, shadows.sm, style]}>
+    <View style={[
+      styles.card,
+      {
+        backgroundColor: themeColors.card,
+        borderColor: themeColors.border,
+      },
+      shadows.sm,
+      style
+    ]}>
       {stripeColor && (
         <View style={[styles.stripe, { backgroundColor: stripeColor }]} />
       )}
@@ -25,12 +36,10 @@ export default function Card({ children, style, stripeColor }: CardProps) {
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: colors.white,
     borderRadius: radius.md,
     flexDirection: 'row',
     overflow: 'hidden',
     borderWidth: 1,
-    borderColor: colors.surface.border,
   },
   stripe: {
     width: 5,

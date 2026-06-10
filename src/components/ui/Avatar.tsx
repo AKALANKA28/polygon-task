@@ -1,13 +1,17 @@
 import React, { useMemo } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { colors } from '../../theme/colors';
-import { typography } from '../../theme/typography';
+import { SvgXml } from 'react-native-svg';
+import { Avatar as DiceBearAvatar } from '@dicebear/core';
+// @ts-ignore
+import lorelei from '@dicebear/styles/dist/lorelei.min.json';
+import { normalize } from '../../utils/responsive';
 
 interface AvatarProps {
   name: string;
+  seed?: string | null;
   size?: number;
-  fontSize?: number;
+  fontSize?: number; // Kept for backwards compatibility
 }
 
 const AVATAR_GRADIENTS = [
@@ -18,43 +22,44 @@ const AVATAR_GRADIENTS = [
   ['#FF3D00', '#FFB800'], // Red to Amber
 ];
 
-export default function Avatar({ name, size = 40, fontSize }: AvatarProps) {
-  const initials = useMemo(() => {
-    if (!name) return 'U';
-    const parts = name.trim().split(/\s+/);
-    if (parts.length >= 2) {
-      return `${parts[0][0]}${parts[1][0]}`.toUpperCase();
-    }
-    return parts[0].substring(0, Math.min(2, parts[0].length)).toUpperCase();
-  }, [name]);
+const Avatar = React.memo(function Avatar({ name, seed, size = 40 }: AvatarProps) {
+  const avatarSeed = seed || name;
 
   const gradientColors = useMemo(() => {
-    if (!name) return AVATAR_GRADIENTS[0];
+    if (!avatarSeed) return AVATAR_GRADIENTS[0];
     let hash = 0;
-    for (let i = 0; i < name.length; i++) {
-      hash = name.charCodeAt(i) + ((hash << 5) - hash);
+    for (let i = 0; i < avatarSeed.length; i++) {
+      hash = avatarSeed.charCodeAt(i) + ((hash << 5) - hash);
     }
     const index = Math.abs(hash) % AVATAR_GRADIENTS.length;
     return AVATAR_GRADIENTS[index];
-  }, [name]);
+  }, [avatarSeed]);
 
-  const calculatedFontSize = fontSize || Math.max(10, Math.floor(size * 0.4));
+  const normalizedSize = normalize(size);
+
+  const svgXml = useMemo(() => {
+    // Generate deterministic avatar using the seed
+    const avatar = new DiceBearAvatar(lorelei as any, {
+      seed: avatarSeed,
+    });
+    return avatar.toString();
+  }, [avatarSeed]);
 
   return (
-    <View style={[styles.container, { width: size, height: size, borderRadius: size / 2 }]}>
+    <View style={[styles.container, { width: normalizedSize, height: normalizedSize, borderRadius: normalizedSize / 2 }]}>
       <LinearGradient
         colors={gradientColors as [string, string]}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
         style={styles.gradient}
       >
-        <Text style={[styles.text, { fontSize: calculatedFontSize }]}>
-          {initials}
-        </Text>
+        <SvgXml xml={svgXml} width={normalizedSize} height={normalizedSize} />
       </LinearGradient>
     </View>
   );
-}
+});
+
+export default Avatar;
 
 const styles = StyleSheet.create({
   container: {
@@ -67,10 +72,5 @@ const styles = StyleSheet.create({
     height: '100%',
     justifyContent: 'center',
     alignItems: 'center',
-  },
-  text: {
-    fontFamily: typography.fonts.bold,
-    color: colors.white,
-    textTransform: 'uppercase',
   },
 });

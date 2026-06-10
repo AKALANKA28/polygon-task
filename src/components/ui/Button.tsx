@@ -13,11 +13,12 @@ import Animated, {
   useSharedValue,
   withSpring,
 } from 'react-native-reanimated';
-import { LinearGradient } from 'expo-linear-gradient';
 import * as Haptics from 'expo-haptics';
 import { colors } from '../../theme/colors';
 import { typography } from '../../theme/typography';
 import { radius, spacing, shadows } from '../../theme/spacing';
+import { normalize } from '../../utils/responsive';
+import { useTheme } from '../../theme/ThemeContext';
 
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 
@@ -42,6 +43,7 @@ export default function Button({
   icon,
   style,
 }: ButtonProps) {
+  const { isDark, themeColors } = useTheme();
   const scale = useSharedValue(1);
 
   const animatedStyle = useAnimatedStyle(() => ({
@@ -65,28 +67,38 @@ export default function Button({
     switch (variant) {
       case 'danger':
         return {
-          container: [styles.dangerContainer, buttonDisabled && styles.disabledContainer],
+          container: [styles.dangerContainer, buttonDisabled && (isDark ? styles.disabledContainerDark : styles.disabledContainerLight)],
           text: styles.dangerText,
-          indicatorColor: colors.semantic.error,
+          indicatorColor: colors.white,
         };
       case 'outline':
         return {
-          container: [styles.outlineContainer, buttonDisabled && styles.disabledContainer],
-          text: styles.outlineText,
-          indicatorColor: colors.primary.DEFAULT,
+          container: [
+            styles.outlineContainer,
+            { borderColor: themeColors.border },
+            buttonDisabled && (isDark ? styles.disabledContainerDark : styles.disabledContainerLight)
+          ],
+          text: [styles.outlineText, { color: themeColors.text }],
+          indicatorColor: themeColors.text,
         };
       case 'ghost':
         return {
-          container: [styles.ghostContainer, buttonDisabled && styles.disabledContainer],
-          text: styles.ghostText,
-          indicatorColor: colors.neutral[500],
+          container: [
+            styles.ghostContainer,
+            buttonDisabled && (isDark ? styles.disabledContainerDark : styles.disabledContainerLight)
+          ],
+          text: [styles.ghostText, { color: themeColors.textSecondary }],
+          indicatorColor: themeColors.textSecondary,
         };
       case 'primary':
       default:
         return {
-          container: [styles.primaryContainer, buttonDisabled && styles.disabledContainer],
-          text: styles.primaryText,
-          indicatorColor: colors.white,
+          container: [
+            isDark ? styles.primaryContainerDark : styles.primaryContainerLight,
+            buttonDisabled && (isDark ? styles.disabledContainerDark : styles.disabledContainerLight)
+          ],
+          text: isDark ? styles.primaryTextDark : styles.primaryTextLight,
+          indicatorColor: isDark ? colors.neutral[900] : colors.white,
         };
     }
   };
@@ -107,14 +119,14 @@ export default function Button({
     return (
       <View style={styles.contentContainer}>
         {icon && <View style={styles.iconContainer}>{icon}</View>}
-        <Text style={[styles.text, styles[`text_${size}`], variantStyles.text, disabled && styles.disabledText]}>
+        <Text style={[styles.text, styles[`text_${size}`], variantStyles.text, disabled && (isDark ? styles.disabledTextDark : styles.disabledTextLight)]}>
           {title}
         </Text>
       </View>
     );
   };
 
-  const mainPressable = (
+  return (
     <AnimatedPressable
       onPress={buttonDisabled ? undefined : onPress}
       onPressIn={handlePressIn}
@@ -127,19 +139,9 @@ export default function Button({
         style,
       ]}
     >
-      {variant === 'primary' && !buttonDisabled ? (
-        <LinearGradient
-          colors={colors.primary.gradient as unknown as [string, string]}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 1 }}
-          style={[StyleSheet.absoluteFill, styles.gradientBg]}
-        />
-      ) : null}
       {renderContent()}
     </AnimatedPressable>
   );
-
-  return mainPressable;
 }
 
 const styles = StyleSheet.create({
@@ -150,19 +152,16 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     overflow: 'hidden',
   },
-  gradientBg: {
-    borderRadius: radius.md,
-  },
   sm: {
-    height: 36,
+    height: normalize(36),
     paddingHorizontal: spacing.md,
   },
   md: {
-    height: 44,
+    height: normalize(44),
     paddingHorizontal: spacing.lg,
   },
   lg: {
-    height: 52,
+    height: normalize(52),
     paddingHorizontal: spacing.xl,
   },
   contentContainer: {
@@ -190,47 +189,65 @@ const styles = StyleSheet.create({
   loader: {
     zIndex: 2,
   },
-  // Primary
-  primaryContainer: {
-    backgroundColor: colors.primary.DEFAULT,
+  // Primary - Light Mode (Black background, White text)
+  primaryContainerLight: {
+    backgroundColor: colors.neutral[900],
     ...shadows.sm,
   },
-  primaryText: {
+  primaryTextLight: {
     color: colors.white,
+  },
+  // Primary - Dark Mode (White background, Black text)
+  primaryContainerDark: {
+    backgroundColor: colors.white,
+    ...shadows.sm,
+  },
+  primaryTextDark: {
+    color: colors.neutral[900],
   },
   // Outline
   outlineContainer: {
     backgroundColor: colors.transparent,
     borderWidth: 1.5,
-    borderColor: colors.surface.border,
   },
   outlineText: {
-    color: colors.primary.DEFAULT,
+    fontFamily: typography.fonts.semiBold,
   },
   // Ghost
   ghostContainer: {
     backgroundColor: colors.transparent,
   },
   ghostText: {
-    color: colors.neutral[600],
+    fontFamily: typography.fonts.semiBold,
   },
-  // Danger
+  // Danger (Solid premium red button)
   dangerContainer: {
-    backgroundColor: 'transparent',
-    borderWidth: 1.5,
-    borderColor: colors.semantic.error + '40',
+    backgroundColor: colors.semantic.error,
+    ...shadows.sm,
   },
   dangerText: {
-    color: colors.semantic.error,
+    color: colors.white,
   },
-  // Disabled
-  disabledContainer: {
-    backgroundColor: colors.neutral[200],
-    borderColor: colors.neutral[300],
+  // Disabled state - Light Mode
+  disabledContainerLight: {
+    backgroundColor: colors.neutral[100],
+    borderColor: colors.neutral[200],
+    borderWidth: 0,
     shadowOpacity: 0,
     elevation: 0,
   },
-  disabledText: {
+  disabledTextLight: {
     color: colors.neutral[400],
+  },
+  // Disabled state - Dark Mode
+  disabledContainerDark: {
+    backgroundColor: colors.neutral[900],
+    borderColor: colors.neutral[800],
+    borderWidth: 0,
+    shadowOpacity: 0,
+    elevation: 0,
+  },
+  disabledTextDark: {
+    color: colors.neutral[600],
   },
 });
