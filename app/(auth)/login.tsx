@@ -112,38 +112,40 @@ export default function LoginScreen() {
       keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
     >
       <StatusBar style="light" />
-      <ScrollView
-        contentContainerStyle={styles.scrollContent}
-        keyboardShouldPersistTaps="handled"
-        showsVerticalScrollIndicator={false}
-        bounces={false}
+
+      {/* Gradient Header - Fixed at the top */}
+      <LinearGradient
+        colors={colors.primary.gradient as any}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+        style={[styles.header, { paddingTop: insets.top + spacing['2xl'] }]}
       >
-        <LinearGradient
-          colors={colors.primary.gradient as any}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 1 }}
-          style={[styles.header, { paddingTop: insets.top + spacing['2xl'] }]}
-        >
-          {/* Decorative circles */}
-          <View style={[styles.circle, styles.circleTopRight]} />
-          <View style={[styles.circle, styles.circleBottomLeft]} />
+        {/* Decorative circles */}
+        <View style={[styles.circle, styles.circleTopRight]} />
+        <View style={[styles.circle, styles.circleBottomLeft]} />
 
-          <Animated.View entering={FadeInDown.delay(200).duration(500)} style={styles.headerContent}>
-            {/* Logo placeholder */}
-            <View style={styles.logoContainer}>
-              <Image
-                source={require('../../assets/images/logo.png')}
-                style={{ width: 120, height: 120, borderRadius: 20 }}
-                resizeMode="contain"
-              />
-            </View>
-          </Animated.View>
-        </LinearGradient>
+        <Animated.View entering={FadeInDown.delay(200).duration(500)} style={styles.headerContent}>
+          {/* Logo placeholder */}
+          <View style={styles.logoContainer}>
+            <Image
+              source={require('../../assets/images/logo.png')}
+              style={{ width: 120, height: 120, borderRadius: 20 }}
+              resizeMode="contain"
+            />
+          </View>
+        </Animated.View>
+      </LinearGradient>
 
-        {/* Form Card */}
-        <Animated.View
-          entering={FadeInUp.delay(400).duration(500)}
-          style={styles.formCard}
+      {/* Form Card - Scrollable Content */}
+      <Animated.View
+        entering={FadeInUp.delay(400).duration(500)}
+        style={styles.formCard}
+      >
+        <ScrollView
+          contentContainerStyle={styles.scrollContent}
+          keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
+          bounces={false}
         >
           <Text style={styles.welcomeText}>Welcome Back</Text>
           <Text style={styles.subtitleText}>Sign in to your account</Text>
@@ -210,8 +212,8 @@ export default function LoginScreen() {
               disabled={isLoading}
             />
           </View>
-        </Animated.View>
-      </ScrollView>
+        </ScrollView>
+      </Animated.View>
     </KeyboardAvoidingView>
   );
 }
@@ -223,10 +225,13 @@ const getStyles = (isDark: boolean, themeColors: any) =>
       backgroundColor: themeColors.background,
     },
     scrollContent: {
+      paddingHorizontal: 28,
+      paddingTop: 28,
+      paddingBottom: 24,
       flexGrow: 1,
     },
     header: {
-      minHeight: screenHeight * 0.58,
+      minHeight: screenHeight * 0.45,
       justifyContent: 'center',
       alignItems: 'center',
       overflow: 'hidden',
@@ -286,9 +291,6 @@ const getStyles = (isDark: boolean, themeColors: any) =>
       borderTopLeftRadius: 32,
       borderTopRightRadius: 32,
       marginTop: -32,
-      paddingHorizontal: 28,
-      paddingTop: 28,
-      paddingBottom: 24,
     },
     errorCard: {
       flexDirection: 'row',
