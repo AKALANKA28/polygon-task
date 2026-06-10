@@ -2,6 +2,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import * as Haptics from 'expo-haptics';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
+import { StatusBar } from 'expo-status-bar';
 import React, { useCallback, useEffect } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import {
@@ -103,6 +104,7 @@ export default function LoginScreen() {
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       keyboardVerticalOffset={0}
     >
+      <StatusBar style="light" />
       <ScrollView
         contentContainerStyle={styles.scrollContent}
         keyboardShouldPersistTaps="handled"
@@ -124,7 +126,7 @@ export default function LoginScreen() {
             <View style={styles.logoContainer}>
               <Image
                 source={require('../../assets/images/logo.png')}
-                style={{ width: 160, height: 160, borderRadius: 20 }}
+                style={{ width: 120, height: 120, borderRadius: 20 }}
                 resizeMode="contain"
               />
             </View>

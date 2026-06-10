@@ -13,7 +13,7 @@ export const colors = {
     DEFAULT: '#FF1F8E',
     light: '#FF5BAD',
     dark: '#C4006A',
-    gradient: ['#0B0F19', '#1E1B4B', '#2E1045'] as const,
+    gradient: ['#3B0B24', '#1C0F30', '#0A0C16'] as const,
   },
 
   // === TASK STATUS COLORS ===
