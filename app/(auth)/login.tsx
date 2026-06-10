@@ -6,14 +6,14 @@ import { StatusBar, setStatusBarStyle } from 'expo-status-bar';
 import React, { useCallback, useEffect } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import {
-  Dimensions,
   Image,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
   StyleSheet,
   Text,
-  View
+  View,
+  useWindowDimensions,
 } from 'react-native';
 import Animated, {
   FadeInDown,
@@ -36,7 +36,7 @@ import { typography } from '../../src/theme/typography';
 import { LoginFormData, loginSchema } from '../../src/utils/validators';
 import { useTheme } from '../../src/theme/ThemeContext';
 
-const { height: screenHeight } = Dimensions.get('window');
+
 
 export default function LoginScreen() {
   const dispatch = useAppDispatch();
@@ -124,7 +124,7 @@ export default function LoginScreen() {
         <View style={[styles.circle, styles.circleTopRight]} />
         <View style={[styles.circle, styles.circleBottomLeft]} />
 
-        <Animated.View entering={FadeInDown.delay(200).duration(500)} style={styles.headerContent}>
+        <Animated.View entering={FadeInDown.delay(200).duration(500).springify()} style={styles.headerContent}>
           {/* Logo placeholder */}
           <View style={styles.logoContainer}>
             <Image
@@ -138,7 +138,7 @@ export default function LoginScreen() {
 
       {/* Form Card - Scrollable Content */}
       <Animated.View
-        entering={FadeInUp.delay(400).duration(500)}
+        entering={FadeInUp.delay(400).duration(500).springify()}
         style={styles.formCard}
       >
         <ScrollView

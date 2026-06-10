@@ -22,7 +22,7 @@ const AVATAR_GRADIENTS = [
   ['#FF3D00', '#FFB800'], // Red to Amber
 ];
 
-export default function Avatar({ name, seed, size = 40 }: AvatarProps) {
+const Avatar = React.memo(function Avatar({ name, seed, size = 40 }: AvatarProps) {
   const avatarSeed = seed || name;
 
   const gradientColors = useMemo(() => {
@@ -57,7 +57,9 @@ export default function Avatar({ name, seed, size = 40 }: AvatarProps) {
       </LinearGradient>
     </View>
   );
-}
+});
+
+export default Avatar;
 
 const styles = StyleSheet.create({
   container: {

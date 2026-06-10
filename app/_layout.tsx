@@ -57,12 +57,20 @@ function AuthGuard({ children }: { children: React.ReactNode }) {
 }
 
 function InnerLayout() {
-  const { isDark } = useTheme();
+  const { isDark, themeColors } = useTheme();
   return (
     <>
       <StatusBar style={isDark ? 'light' : 'dark'} />
       <AuthGuard>
-        <Stack screenOptions={{ headerShown: false, animation: 'fade' }} />
+        <Stack
+          screenOptions={{
+            headerShown: false,
+            animation: 'fade_from_bottom',
+            animationDuration: 200,
+            freezeOnBlur: true,
+            contentStyle: { backgroundColor: themeColors.background },
+          }}
+        />
       </AuthGuard>
     </>
   );

@@ -18,7 +18,7 @@ interface TaskCardProps {
   showDueToday?: boolean;
 }
 
-export default function TaskCard({ task, onPress, index = 0, showDueToday = false }: TaskCardProps) {
+const TaskCard = React.memo(function TaskCard({ task, onPress, index = 0, showDueToday = false }: TaskCardProps) {
   const { isDark, themeColors } = useTheme();
 
   const priorityColors = useMemo(() => {
@@ -141,7 +141,9 @@ export default function TaskCard({ task, onPress, index = 0, showDueToday = fals
       </TouchableOpacity>
     </Animated.View>
   );
-}
+});
+
+export default TaskCard;
 
 const SvgCalendarIcon = ({ color }: { color: string }) => (
   <View style={styles.calendarIcon}>

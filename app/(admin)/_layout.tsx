@@ -1,6 +1,7 @@
 import { Tabs, usePathname } from 'expo-router';
-import { View, StyleSheet } from 'react-native';
+import { View, StyleSheet, Platform } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { colors } from '../../src/theme/colors';
 import { typography } from '../../src/theme/typography';
 import { useTheme } from '../../src/theme/ThemeContext';
@@ -24,13 +25,17 @@ const TabIcon = ({ name, color, focused }: { name: string; color: string; focuse
 
 export default function AdminLayout() {
   const { isDark, themeColors } = useTheme();
+  const insets = useSafeAreaInsets();
   const pathname = usePathname();
   const hideTabBar = pathname.startsWith('/tasks/') || pathname.includes('/create') || pathname.includes('/edit');
+  const tabBarPaddingBottom = Math.max(insets.bottom, 8);
 
   return (
     <Tabs
       screenOptions={{
         headerShown: false,
+        freezeOnBlur: true,
+        tabBarHideOnKeyboard: Platform.OS === 'android',
         tabBarActiveTintColor: isDark ? colors.white : colors.neutral[900],
         tabBarInactiveTintColor: isDark ? colors.neutral[400] : colors.neutral[500],
         tabBarLabelStyle: {
@@ -41,8 +46,8 @@ export default function AdminLayout() {
         tabBarStyle: {
           backgroundColor: themeColors.card,
           borderTopColor: themeColors.border,
-          height: 64,
-          paddingBottom: 8,
+          height: 56 + tabBarPaddingBottom,
+          paddingBottom: tabBarPaddingBottom,
           paddingTop: 8,
           display: hideTabBar ? 'none' : 'flex',
         },

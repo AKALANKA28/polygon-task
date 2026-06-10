@@ -22,7 +22,7 @@ const SvgCalendarIcon = ({ color }: { color: string }) => (
   </Svg>
 );
 
-export default function FeaturedTaskCard({ task, onPress }: FeaturedTaskCardProps) {
+const FeaturedTaskCard = React.memo(function FeaturedTaskCard({ task, onPress }: FeaturedTaskCardProps) {
   const { isDark, themeColors } = useTheme();
 
   const progressPercent = useMemo(() => {
@@ -112,7 +112,9 @@ export default function FeaturedTaskCard({ task, onPress }: FeaturedTaskCardProp
       </View>
     </TouchableOpacity>
   );
-}
+});
+
+export default FeaturedTaskCard;
 
 const AvatarStack = ({ assignees, size = 26 }: { assignees: any[], size?: number }) => {
   if (!assignees || assignees.length === 0) return null;
