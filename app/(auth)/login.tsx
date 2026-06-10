@@ -231,7 +231,7 @@ const getStyles = (isDark: boolean, themeColors: any) =>
       flexGrow: 1,
     },
     header: {
-      minHeight: screenHeight * 0.45,
+      minHeight: screenHeight * 0.35,
       justifyContent: 'center',
       alignItems: 'center',
       overflow: 'hidden',
