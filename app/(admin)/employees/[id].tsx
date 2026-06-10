@@ -191,8 +191,8 @@ export default function EmployeeDetailScreen() {
           />
         }
       >
-        {/* Profile Card Info */}
-        <View style={[styles.profileCard, { backgroundColor: themeColors.card, borderColor: themeColors.border }]}>
+        {/* Profile Info Section */}
+        <View style={styles.profileSection}>
           <View style={styles.profileHeader}>
             <Avatar name={employee.name} size={64} />
             <View style={styles.profileMeta}>
@@ -211,7 +211,7 @@ export default function EmployeeDetailScreen() {
             </View>
           </View>
           {employee.phone && (
-            <View style={[styles.phoneRow, { borderTopColor: themeColors.border }]}>
+            <View style={styles.phoneRow}>
               <Svg width={16} height={16} viewBox="0 0 24 24" fill="none" stroke={themeColors.textSecondary} strokeWidth={2}>
                 <Path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72 12.84 12.84 0 00.7 2.81 2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45 12.84 12.84 0 002.81.7A2 2 0 0122 16.92z" strokeLinecap="round" strokeLinejoin="round" />
               </Svg>
@@ -233,7 +233,7 @@ export default function EmployeeDetailScreen() {
         </View>
 
         {/* Completion Progress Rate */}
-        <View style={[styles.progressCard, { backgroundColor: themeColors.card, borderColor: themeColors.border }]}>
+        <View style={styles.progressSection}>
           <View style={styles.progressHeader}>
             <Text style={[styles.progressLabel, { color: themeColors.textSecondary }]}>Task Completion Rate</Text>
             <Text style={styles.progressPercentage}>{formattedPercentage}</Text>
@@ -279,10 +279,8 @@ const styles = StyleSheet.create({
     padding: spacing.base,
     paddingBottom: spacing['4xl'],
   },
-  profileCard: {
-    borderRadius: radius.lg,
-    borderWidth: 1,
-    padding: spacing.xl,
+  profileSection: {
+    paddingVertical: spacing.md,
     marginBottom: spacing.md,
   },
   profileHeader: {
@@ -306,8 +304,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     marginTop: spacing.md,
-    paddingTop: spacing.md,
-    borderTopWidth: 0.5,
     gap: spacing.sm,
   },
   phoneText: {
@@ -349,10 +345,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  progressCard: {
-    borderRadius: radius.lg,
-    borderWidth: 1,
-    padding: spacing.xl,
+  progressSection: {
+    paddingVertical: spacing.sm,
     marginBottom: spacing.lg,
   },
   progressHeader: {
