@@ -1,4 +1,4 @@
-import React, { useEffect, useCallback, useState, useRef } from 'react';
+import React, { useEffect, useCallback, useState, useRef, useMemo } from 'react';
 import {
   View,
   StyleSheet,
@@ -10,6 +10,7 @@ import {
   Keyboard,
   Dimensions,
   Platform,
+  TextInput,
 } from 'react-native';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -50,6 +51,19 @@ export default function EmployeesScreen() {
   const { items: employees, isLoading } = useAppSelector((s) => s.employees);
   const [keyboardHeight, setKeyboardHeight] = useState(0);
   const [refreshing, setRefreshing] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [isSearchFocused, setIsSearchFocused] = useState(false);
+
+  const filteredEmployees = useMemo(() => {
+    if (!searchQuery.trim()) return employees;
+    const query = searchQuery.toLowerCase().trim();
+    return employees.filter(
+      (emp) =>
+        emp.name.toLowerCase().includes(query) ||
+        emp.email.toLowerCase().includes(query) ||
+        (emp.department && emp.department.toLowerCase().includes(query))
+    );
+  }, [employees, searchQuery]);
 
   useEffect(() => {
     const showEvent = Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow';
@@ -202,6 +216,41 @@ export default function EmployeesScreen() {
     <View style={[styles.container, { backgroundColor: themeColors.background }]}>
       <Header title="Employees" />
 
+      <View
+        style={[
+          styles.searchContainer,
+          {
+            borderColor: isSearchFocused ? colors.brand.purple : themeColors.border,
+          }
+        ]}
+      >
+        <View style={styles.searchIcon}>
+          <Svg width={normalize(18)} height={normalize(18)} viewBox="0 0 24 24" fill="none" stroke={themeColors.textSecondary} strokeWidth={2}>
+            <Path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" strokeLinecap="round" strokeLinejoin="round" />
+          </Svg>
+        </View>
+
+        <TextInput
+          style={[styles.searchInput, { color: themeColors.text }]}
+          placeholder="Search employees..."
+          placeholderTextColor={isDark ? colors.neutral[500] : colors.neutral[400]}
+          value={searchQuery}
+          onChangeText={setSearchQuery}
+          onFocus={() => setIsSearchFocused(true)}
+          onBlur={() => setIsSearchFocused(false)}
+          returnKeyType="search"
+          clearButtonMode="never"
+        />
+
+        {searchQuery.length > 0 && (
+          <TouchableOpacity style={styles.clearButton} onPress={() => setSearchQuery('')} activeOpacity={0.6}>
+            <Svg width={normalize(16)} height={normalize(16)} viewBox="0 0 24 24" fill="none" stroke={themeColors.textSecondary} strokeWidth={2}>
+              <Path d="M6 18L18 6M6 6l12 12" strokeLinecap="round" strokeLinejoin="round" />
+            </Svg>
+          </TouchableOpacity>
+        )}
+      </View>
+
       <ScrollView
         style={styles.content}
         contentContainerStyle={styles.contentInner}
@@ -214,12 +263,15 @@ export default function EmployeesScreen() {
           />
         }
       >
-        {isLoading && employees.length === 0 ? (
+        {isLoading && filteredEmployees.length === 0 ? (
           <Skeleton type="card" count={4} />
-        ) : employees.length === 0 ? (
-          <EmptyState title="No employees found" subtitle="Employees will appear here once added" />
+        ) : filteredEmployees.length === 0 ? (
+          <EmptyState
+            title="No employees found"
+            subtitle={searchQuery ? "Try adjusting your search query" : "Employees will appear here once added"}
+          />
         ) : (
-          employees.map((employee) => (
+          filteredEmployees.map((employee) => (
             <EmployeeProgressCard
               key={employee.id}
               employee={employee}
@@ -629,5 +681,34 @@ const getStyles = (isDark: boolean, themeColors: any) =>
       height: 0.5,
       backgroundColor: themeColors.border,
       marginVertical: spacing.sm,
+    },
+    searchContainer: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      height: normalize(48),
+      borderRadius: radius.md,
+      borderWidth: 1.5,
+      paddingHorizontal: spacing.md,
+      backgroundColor: themeColors.card,
+      marginHorizontal: spacing.base,
+      marginTop: spacing.xs,
+      marginBottom: spacing.sm,
+    },
+    searchIcon: {
+      marginRight: spacing.sm,
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
+    searchInput: {
+      flex: 1,
+      height: '100%',
+      fontFamily: typography.fonts.regular,
+      fontSize: typography.sizes.base,
+      paddingVertical: 0,
+    },
+    clearButton: {
+      padding: spacing.xs,
+      justifyContent: 'center',
+      alignItems: 'center',
     },
   });
