@@ -139,9 +139,6 @@ export default function LoginScreen() {
           entering={FadeInUp.delay(400).duration(500)}
           style={[styles.formCard, shadows.lg]}
         >
-          {/* Top handle pill for modern bottom-sheet appearance */}
-          <View style={styles.sheetHandle} />
-
           <Animated.View style={shakeStyle}>
             <Controller
               control={control}
@@ -159,6 +156,7 @@ export default function LoginScreen() {
                   autoCapitalize="none"
                   autoComplete="email"
                   returnKeyType="next"
+                  containerStyle={{ marginBottom: spacing.sm }}
                 />
               )}
             />
@@ -181,6 +179,7 @@ export default function LoginScreen() {
                   autoComplete="password"
                   returnKeyType="done"
                   onSubmitEditing={handleSubmit(onSubmit)}
+                  containerStyle={{ marginBottom: spacing.xs }}
                 />
               )}
             />
@@ -279,20 +278,11 @@ const getStyles = (isDark: boolean, themeColors: any) =>
       marginTop: -32,
       marginHorizontal: 20,
       paddingHorizontal: 24,
-      paddingTop: spacing.md,
-      paddingBottom: 28,
+      paddingTop: spacing.lg,
+      paddingBottom: spacing.lg,
       borderWidth: 1,
       borderColor: themeColors.border,
       marginBottom: spacing.xl,
-    },
-    sheetHandle: {
-      width: 42,
-      height: 5,
-      borderRadius: 2.5,
-      backgroundColor: isDark ? 'rgba(255, 255, 255, 0.15)' : 'rgba(0, 0, 0, 0.08)',
-      alignSelf: 'center',
-      marginBottom: spacing.xl,
-      marginTop: spacing.xs,
     },
     errorCard: {
       flexDirection: 'row',
