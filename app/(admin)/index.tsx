@@ -24,7 +24,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import { useRouter } from 'expo-router';
 import { normalize } from '../../src/utils/responsive';
-import Svg, { Path } from 'react-native-svg';
+import Svg, { Path, SvgUri } from 'react-native-svg';
 import Modal from 'react-native-modal';
 import * as Haptics from 'expo-haptics';
 
@@ -81,29 +81,26 @@ interface StatCardProps {
 }
 
 const StatCard: React.FC<StatCardProps> = React.memo(({ icon, count, label, delay, isDark, themeColors }) => {
-  const iconPaths: Record<string, string> = {
-    clipboard: 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2',
-    clock: 'M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z',
-    zap: 'M13 10V3L4 14h7v7l9-11h-7z',
-    check: 'M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z',
-  };
-
   const themeMap = {
     clipboard: {
       color: isDark ? '#C084FC' : '#8B1FCC',
       bg: isDark ? 'rgba(168, 85, 247, 0.12)' : 'rgba(139, 31, 204, 0.08)',
+      seed: 'clipboard-data',
     },
     clock: {
       color: isDark ? '#FBBF24' : '#D97706',
       bg: isDark ? 'rgba(245, 158, 11, 0.12)' : 'rgba(245, 158, 11, 0.08)',
+      seed: 'clock',
     },
     zap: {
       color: isDark ? '#38BDF8' : '#0284C7',
       bg: isDark ? 'rgba(56, 189, 248, 0.12)' : 'rgba(56, 189, 248, 0.08)',
+      seed: 'lightning-charge',
     },
     check: {
       color: isDark ? '#34D399' : '#10B981',
       bg: isDark ? 'rgba(52, 211, 153, 0.12)' : 'rgba(16, 185, 129, 0.08)',
+      seed: 'check2-circle',
     },
   };
 
@@ -125,9 +122,11 @@ const StatCard: React.FC<StatCardProps> = React.memo(({ icon, count, label, dela
           <AnimatedNumber value={count} delay={delay} isDark={isDark} />
         </View>
         <View style={[statStyles.iconCircle, { backgroundColor: activeTheme.bg }]}>
-          <Svg width={20} height={20} viewBox="0 0 24 24" fill="none" stroke={activeTheme.color} strokeWidth={2}>
-            <Path d={iconPaths[icon]} strokeLinecap="round" strokeLinejoin="round" />
-          </Svg>
+          <SvgUri
+            width={normalize(20)}
+            height={normalize(20)}
+            uri={`https://api.dicebear.com/9.x/icons/svg?seed=${activeTheme.seed}&iconColor=${activeTheme.color.replace('#', '')}`}
+          />
         </View>
       </View>
     </Animated.View>
