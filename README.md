@@ -160,6 +160,24 @@ The backend exposes RESTful endpoints routed through Axios (`src/services/api.ts
 - `PUT /api/tasks/:id/status`
 - `GET /api/employees`
 
+## 🧪 Unit Testing
+
+We have a robust unit testing configuration using Jest, Jest-Expo, and React Native Testing Library. Running `npm run test` executes **47 test cases** across **5 test suites**.
+
+Covered components and modules:
+- **Utility Formatters:** Date parsing, string formatting, greeting hours, and gradient hashing.
+- **Form Validation Schemas:** Inputs checks for logins, task assignments, and employee accounts.
+- **Redux Slice States:** Comprehensive state validation for actions, reducers, and filters in `tasksSlice` and `authSlice`.
+- **UI Components:** Structural and visual validations of progress tracking rendering.
+
+## 📶 Offline Data Handling & Background Sync
+
+The app maintains operations in network-limited scenarios using a caching and synchronization system:
+- **State Hydration:** All tasks, stats, and employees lists are cached in local `AsyncStorage`. If the user opens the app offline, the state is populated from the cache.
+- **Optimistic Offline Updates:** Mutations like changing task status or creating a task when offline are applied locally to the Redux store instantly so the interface remains fully responsive.
+- **Background Queue Syncing:** The thunks queue these offline writes into a local `offlineQueue`. When `NetInfo` detects restored connectivity, the app replays the queue against the Express API and pulls fresh database records.
+- **Offline UI States:** A sleek glassmorphic banner (`OfflineIndicator`) slides in at the top of the viewport when connection is lost to inform the user.
+
 ## 🩺 Troubleshooting
 
 - **Metro Bundler Cache Issues:** If styles or routes aren't updating, run `npx expo start -c` to clear the cache.

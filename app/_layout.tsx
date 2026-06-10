@@ -1,8 +1,11 @@
 import { useEffect } from 'react';
 import { Stack, useRouter, useSegments } from 'expo-router';
 import { Provider } from 'react-redux';
+import NetInfo from '@react-native-community/netinfo';
 import { store } from '../src/store';
 import { restoreSession } from '../src/store/slices/authSlice';
+import { restoreTasksCache, processOfflineSync } from '../src/store/slices/tasksSlice';
+import { restoreEmployeesCache } from '../src/store/slices/employeesSlice';
 import { useAppDispatch, useAppSelector } from '../src/store/hooks';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
@@ -20,6 +23,7 @@ import { View, ActivityIndicator } from 'react-native';
 import { colors } from '../src/theme/colors';
 
 import { ThemeProvider, useTheme } from '../src/theme/ThemeContext';
+import OfflineIndicator from '../src/components/ui/OfflineIndicator';
 
 function AuthGuard({ children }: { children: React.ReactNode }) {
   const { user, isInitialized } = useAppSelector((s) => s.auth);
@@ -27,8 +31,42 @@ function AuthGuard({ children }: { children: React.ReactNode }) {
   const segments = useSegments();
   const dispatch = useAppDispatch();
 
+  // Restore sessions and local caches on launch
   useEffect(() => {
     dispatch(restoreSession());
+    dispatch(restoreTasksCache());
+    dispatch(restoreEmployeesCache());
+  }, [dispatch]);
+
+  // Listen to network changes and execute background synchronization
+  useEffect(() => {
+    let isInitialFetch = true;
+    const unsubscribe = NetInfo.addEventListener((state) => {
+      // Avoid triggering sync immediately on the first hook registration if already online
+      if (isInitialFetch) {
+        isInitialFetch = false;
+        return;
+      }
+      if (state.isConnected) {
+        console.log('[NetInfo] Restored connectivity. Triggering background offline sync.');
+        dispatch(processOfflineSync())
+          .unwrap()
+          .then(() => {
+            Toast.show({
+              type: 'success',
+              text1: 'Sync Completed',
+              text2: 'Offline updates synchronized successfully!',
+              position: 'top',
+              visibilityTime: 4000,
+            });
+          })
+          .catch((err) => {
+            console.error('[Offline Sync] Sync error during reconnect:', err);
+          });
+      }
+    });
+
+    return () => unsubscribe();
   }, [dispatch]);
 
   useEffect(() => {
@@ -72,6 +110,7 @@ function InnerLayout() {
           }}
         />
       </AuthGuard>
+      <OfflineIndicator />
     </>
   );
 }

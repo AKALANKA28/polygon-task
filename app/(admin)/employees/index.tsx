@@ -399,7 +399,7 @@ export default function EmployeesScreen() {
           <View style={styles.dragHandle} />
           <Text style={styles.bottomSheetTitle}>Delete Employee</Text>
           <Text style={styles.bottomSheetMessage}>
-            Are you sure you want to delete "{selectedEmployee?.name}"? All assigned tasks and comments will be deleted permanently.
+            Are you sure you want to delete &quot;{selectedEmployee?.name}&quot;? All assigned tasks and comments will be deleted permanently.
           </Text>
           <View style={styles.bottomSheetButtons}>
             <View style={{ flex: 1 }}>

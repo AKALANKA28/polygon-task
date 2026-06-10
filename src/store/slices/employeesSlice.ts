@@ -1,5 +1,6 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import { employeeService } from '../../services/employeeService';
+import { storage } from '../../utils/storage';
 import type { Employee, EmployeeWithTasks, CreateEmployeeDto, UpdateEmployeeDto } from '../../types/employee.types';
 
 interface EmployeesState {
@@ -15,6 +16,25 @@ const initialState: EmployeesState = {
   isLoading: false,
   error: null,
 };
+
+// Caching helper
+const saveEmployeesCache = async (items: Employee[]) => {
+  try {
+    await storage.setItem('cached_employees', JSON.stringify(items));
+  } catch (e) {
+    console.error('[saveEmployeesCache] Error saving employees:', e);
+  }
+};
+
+export const restoreEmployeesCache = createAsyncThunk('employees/restoreCache', async () => {
+  try {
+    const cached = await storage.getItem('cached_employees');
+    return cached ? JSON.parse(cached) : [];
+  } catch (e) {
+    console.error('[restoreEmployeesCache] Error restoring employees cache:', e);
+    return [];
+  }
+});
 
 export const fetchEmployees = createAsyncThunk('employees/fetchAll', async (_, { rejectWithValue }) => {
   try {
@@ -84,6 +104,9 @@ const employeesSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
+      .addCase(restoreEmployeesCache.fulfilled, (state, action) => {
+        state.items = action.payload;
+      })
       .addCase(fetchEmployees.pending, (state) => {
         state.isLoading = !state.items.length;
       })
@@ -91,6 +114,7 @@ const employeesSlice = createSlice({
         state.isLoading = false;
         state.items = action.payload;
         state.error = null;
+        saveEmployeesCache(state.items);
       })
       .addCase(fetchEmployees.rejected, (state, action) => {
         state.isLoading = false;
@@ -102,15 +126,18 @@ const employeesSlice = createSlice({
       .addCase(createEmployee.fulfilled, (state, action) => {
         state.items.push(action.payload);
         state.items.sort((a, b) => a.name.localeCompare(b.name));
+        saveEmployeesCache(state.items);
       })
       .addCase(updateEmployee.fulfilled, (state, action) => {
         const index = state.items.findIndex((e) => e.id === action.payload.id);
         if (index !== -1) {
           state.items[index] = { ...state.items[index], ...action.payload };
         }
+        saveEmployeesCache(state.items);
       })
       .addCase(deleteEmployee.fulfilled, (state, action) => {
         state.items = state.items.filter((e) => e.id !== action.payload);
+        saveEmployeesCache(state.items);
       });
   },
 });
