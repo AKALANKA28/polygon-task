@@ -46,6 +46,7 @@ export default function AdminLayout() {
           paddingTop: 8,
           display: hideTabBar ? 'none' : 'flex',
         },
+        popToTopOnBlur: true,
       }}
     >
       <Tabs.Screen
