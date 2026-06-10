@@ -109,9 +109,8 @@ export default function LoginScreen() {
         showsVerticalScrollIndicator={false}
         bounces={false}
       >
-        {/* Gradient Header */}
         <LinearGradient
-          colors={colors.primary.gradient as unknown as [string, string]}
+          colors={colors.primary.gradient as any}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 1 }}
           style={[styles.header, { paddingTop: insets.top + spacing['2xl'] }]}

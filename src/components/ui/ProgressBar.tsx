@@ -12,13 +12,13 @@ import { radius } from '../../theme/spacing';
 interface ProgressBarProps {
   progress: number; // 0 to 1
   height?: number;
-  gradientColors?: [string, string];
+  gradientColors?: string[];
 }
 
 export default function ProgressBar({
   progress,
   height = 8,
-  gradientColors = colors.primary.gradient as unknown as [string, string],
+  gradientColors = colors.primary.gradient as any,
 }: ProgressBarProps) {
   const animatedProgress = useSharedValue(0);
 
@@ -36,7 +36,7 @@ export default function ProgressBar({
     <View style={[styles.container, { height, borderRadius: height / 2 }]}>
       <Animated.View style={[styles.bar, animatedStyle]}>
         <LinearGradient
-          colors={gradientColors}
+          colors={gradientColors as any}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 0 }}
           style={StyleSheet.absoluteFill}
