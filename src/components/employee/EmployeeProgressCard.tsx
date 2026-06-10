@@ -10,10 +10,11 @@ import { useTheme } from '../../theme/ThemeContext';
 
 interface EmployeeProgressCardProps {
   employee: Employee;
+  onPress?: () => void;
   onLongPress?: () => void;
 }
 
-export default function EmployeeProgressCard({ employee, onLongPress }: EmployeeProgressCardProps) {
+export default function EmployeeProgressCard({ employee, onPress, onLongPress }: EmployeeProgressCardProps) {
   const { isDark, themeColors } = useTheme();
   
   const taskCount = employee.taskCount || 0;
@@ -32,7 +33,8 @@ export default function EmployeeProgressCard({ employee, onLongPress }: Employee
 
   return (
     <TouchableOpacity
-      activeOpacity={onLongPress ? 0.8 : 1}
+      activeOpacity={onPress || onLongPress ? 0.8 : 1}
+      onPress={onPress}
       onLongPress={onLongPress}
       delayLongPress={500}
       style={[styles.card, { backgroundColor: themeColors.card, borderColor: themeColors.border }, shadows.sm]}

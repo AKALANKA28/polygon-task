@@ -275,6 +275,7 @@ export default function EmployeesScreen() {
             <EmployeeProgressCard
               key={employee.id}
               employee={employee}
+              onPress={() => router.push(`/(admin)/employees/${employee.id}` as any)}
               onLongPress={() => handleCardLongPress(employee)}
             />
           ))
