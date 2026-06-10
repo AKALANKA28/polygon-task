@@ -171,7 +171,7 @@ export default function EmployeeTaskDetailScreen() {
                     styles.statusButton,
                     isSelected
                       ? { backgroundColor: statusColors.dot, borderColor: statusColors.dot }
-                      : { borderColor: statusColors.border, backgroundColor: statusColors.bg },
+                      : { borderColor: themeColors.border, backgroundColor: isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.02)' },
                   ]}
                   onPress={() => handleStatusUpdate(option.value)}
                   disabled={updatingStatus !== null}
@@ -181,12 +181,7 @@ export default function EmployeeTaskDetailScreen() {
                     <ActivityIndicator size="small" color={isSelected ? colors.white : statusColors.dot} />
                   ) : (
                     <>
-                      {isSelected && (
-                        <Svg width={normalize(18)} height={normalize(18)} viewBox="0 0 24 24" fill="none" stroke={colors.white} strokeWidth={2.5}>
-                          <Path d="M5 13l4 4L19 7" strokeLinecap="round" strokeLinejoin="round" />
-                        </Svg>
-                      )}
-                      <Svg width={normalize(18)} height={normalize(18)} viewBox="0 0 24 24" fill="none" stroke={isSelected ? colors.white : statusColors.text} strokeWidth={1.8}>
+                      <Svg width={normalize(18)} height={normalize(18)} viewBox="0 0 24 24" fill="none" stroke={isSelected ? colors.white : statusColors.text} strokeWidth={isSelected ? 2.2 : 1.8}>
                         <Path d={option.icon} strokeLinecap="round" strokeLinejoin="round" />
                       </Svg>
                       <Text
@@ -228,7 +223,7 @@ export default function EmployeeTaskDetailScreen() {
           )}
 
           {task.assignees && task.assignees.length > 0 && (
-            <View style={styles.detailRow}>
+            <View style={[styles.detailRow, { alignItems: 'flex-start', paddingTop: 2 }]}>
               <Text style={styles.detailLabel}>Assigned to</Text>
               <View style={{ gap: spacing.sm, alignItems: 'flex-end' }}>
                 {task.assignees.map((assignee) => (
