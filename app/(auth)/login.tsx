@@ -30,7 +30,7 @@ import Input from '../../src/components/ui/Input';
 import { useAppDispatch, useAppSelector } from '../../src/store/hooks';
 import { clearError, login } from '../../src/store/slices/authSlice';
 import { colors } from '../../src/theme/colors';
-import { radius, spacing } from '../../src/theme/spacing';
+import { radius, spacing, shadows } from '../../src/theme/spacing';
 import { typography } from '../../src/theme/typography';
 import { LoginFormData, loginSchema } from '../../src/utils/validators';
 import { useTheme } from '../../src/theme/ThemeContext';
@@ -137,8 +137,11 @@ export default function LoginScreen() {
         {/* Form Card */}
         <Animated.View
           entering={FadeInUp.delay(400).duration(500)}
-          style={styles.formCard}
+          style={[styles.formCard, shadows.lg]}
         >
+          {/* Top handle pill for modern bottom-sheet appearance */}
+          <View style={styles.sheetHandle} />
+
           <Animated.View style={shakeStyle}>
             <Controller
               control={control}
@@ -202,13 +205,7 @@ export default function LoginScreen() {
             />
           </View>
 
-          {/* Demo credentials hint */}
-          <View style={styles.hintContainer}>
-            <Text style={styles.hintTitle}>Demo Credentials</Text>
-            <Text style={styles.hintText}>Admin: admin@polygon.com</Text>
-            <Text style={styles.hintText}>Employee: jane@polygon.com</Text>
-            <Text style={styles.hintText}>Password: password123</Text>
-          </View>
+
         </Animated.View>
       </ScrollView>
     </KeyboardAvoidingView>
@@ -277,14 +274,25 @@ const getStyles = (isDark: boolean, themeColors: any) =>
       marginTop: spacing.xs,
     },
     formCard: {
-      flex: 1,
-      backgroundColor: themeColors.background,
-      borderTopLeftRadius: 32,
-      borderTopRightRadius: 32,
+      backgroundColor: themeColors.card,
+      borderRadius: 24,
       marginTop: -32,
-      paddingHorizontal: 28,
-      paddingTop: 36,
-      paddingBottom: 24,
+      marginHorizontal: 20,
+      paddingHorizontal: 24,
+      paddingTop: spacing.md,
+      paddingBottom: 28,
+      borderWidth: 1,
+      borderColor: themeColors.border,
+      marginBottom: spacing.xl,
+    },
+    sheetHandle: {
+      width: 42,
+      height: 5,
+      borderRadius: 2.5,
+      backgroundColor: isDark ? 'rgba(255, 255, 255, 0.15)' : 'rgba(0, 0, 0, 0.08)',
+      alignSelf: 'center',
+      marginBottom: spacing.xl,
+      marginTop: spacing.xs,
     },
     errorCard: {
       flexDirection: 'row',
@@ -305,26 +313,5 @@ const getStyles = (isDark: boolean, themeColors: any) =>
     },
     buttonContainer: {
       marginTop: spacing.sm,
-    },
-    hintContainer: {
-      marginTop: spacing['2xl'],
-      padding: spacing.base,
-      backgroundColor: themeColors.overlay,
-      borderRadius: radius.md,
-      alignItems: 'center',
-      borderWidth: isDark ? 1 : 0,
-      borderColor: themeColors.border,
-    },
-    hintTitle: {
-      fontFamily: typography.fonts.semiBold,
-      fontSize: typography.sizes.sm,
-      color: colors.brand.purple,
-      marginBottom: spacing.sm,
-    },
-    hintText: {
-      fontFamily: typography.fonts.regular,
-      fontSize: typography.sizes.sm,
-      color: themeColors.textSecondary,
-      marginTop: 2,
     },
   });
