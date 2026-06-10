@@ -24,9 +24,10 @@ import Animated, {
 } from 'react-native-reanimated';
 import { useRouter } from 'expo-router';
 import { normalize } from '../../src/utils/responsive';
-import Svg, { Path, SvgUri } from 'react-native-svg';
+import Svg, { Path } from 'react-native-svg';
 import Modal from 'react-native-modal';
 import * as Haptics from 'expo-haptics';
+import { LinearGradient } from 'expo-linear-gradient';
 
 import Header from '../../src/components/ui/Header';
 import TaskCard from '../../src/components/task/TaskCard';
@@ -81,26 +82,25 @@ interface StatCardProps {
 }
 
 const StatCard: React.FC<StatCardProps> = React.memo(({ icon, count, label, delay, isDark, themeColors }) => {
+  const iconPaths: Record<string, string> = {
+    clipboard: 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2',
+    clock: 'M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z',
+    zap: 'M13 10V3L4 14h7v7l9-11h-7z',
+    check: 'M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z',
+  };
+
   const themeMap = {
     clipboard: {
-      color: isDark ? '#C084FC' : '#8B1FCC',
-      bg: isDark ? 'rgba(168, 85, 247, 0.12)' : 'rgba(139, 31, 204, 0.08)',
-      seed: 'clipboard-data',
+      gradient: ['#FF1F8E', '#8B1FCC'],
     },
     clock: {
-      color: isDark ? '#FBBF24' : '#D97706',
-      bg: isDark ? 'rgba(245, 158, 11, 0.12)' : 'rgba(245, 158, 11, 0.08)',
-      seed: 'clock',
+      gradient: ['#FF8F00', '#FF1F8E'],
     },
     zap: {
-      color: isDark ? '#38BDF8' : '#0284C7',
-      bg: isDark ? 'rgba(56, 189, 248, 0.12)' : 'rgba(56, 189, 248, 0.08)',
-      seed: 'lightning-charge',
+      gradient: ['#8B1FCC', '#00C4FF'],
     },
     check: {
-      color: isDark ? '#34D399' : '#10B981',
-      bg: isDark ? 'rgba(52, 211, 153, 0.12)' : 'rgba(16, 185, 129, 0.08)',
-      seed: 'check2-circle',
+      gradient: ['#00C4FF', '#00FF87'],
     },
   };
 
@@ -121,13 +121,16 @@ const StatCard: React.FC<StatCardProps> = React.memo(({ icon, count, label, dela
           <Text style={[statStyles.label, { color: themeColors.textSecondary }]} numberOfLines={1}>{label}</Text>
           <AnimatedNumber value={count} delay={delay} isDark={isDark} />
         </View>
-        <View style={[statStyles.iconCircle, { backgroundColor: activeTheme.bg }]}>
-          <SvgUri
-            width={normalize(20)}
-            height={normalize(20)}
-            uri={`https://api.dicebear.com/9.x/icons/svg?seed=${activeTheme.seed}&iconColor=${activeTheme.color.replace('#', '')}`}
-          />
-        </View>
+        <LinearGradient
+          colors={activeTheme.gradient as [string, string]}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={statStyles.iconCircle}
+        >
+          <Svg width={20} height={20} viewBox="0 0 24 24" fill="none" stroke={colors.white} strokeWidth={2}>
+            <Path d={iconPaths[icon]} strokeLinecap="round" strokeLinejoin="round" />
+          </Svg>
+        </LinearGradient>
       </View>
     </Animated.View>
   );
