@@ -124,6 +124,48 @@ npx eas build --platform android --profile preview
 npx eas build --platform ios --profile preview
 ```
 
+## 🏗 Project Architecture
+
+The app is structured for scalability, separating routing from UI and state:
+
+```text
+polygon-task/
+├── app/                  # Expo Router file-based routing
+│   ├── (admin)/          # Admin-only dashboard & screens
+│   ├── (employee)/       # Employee-only dashboard & screens
+│   └── (auth)/           # Login screens
+├── backend/              # Express API & MySQL configuration
+├── src/
+│   ├── components/       # Reusable UI elements (Buttons, Cards)
+│   ├── services/         # Axios API clients
+│   ├── store/            # Redux global state & thunks
+│   ├── theme/            # Design tokens (Colors, Spacing)
+│   ├── types/            # Global TypeScript definitions
+│   └── utils/            # Helpers, formatters, and validators
+```
+
+## 🧠 State Management
+
+Global state is handled via **Redux Toolkit**:
+- `authSlice`: Manages JWT session, login/logout, and profile updates.
+- `tasksSlice`: Handles task CRUD operations, real-time fetching, and statistics.
+- `employeesSlice`: Manages the admin's view of the employee roster.
+Local component state is kept strictly for UI logic (e.g., modals, form inputs, local toggles).
+
+## 🔌 API Structure
+
+The backend exposes RESTful endpoints routed through Axios (`src/services/api.ts`). Core routes include:
+- `POST /api/auth/login`
+- `GET /api/tasks` (with optional `status`, `priority`, `employee_id` query params)
+- `PUT /api/tasks/:id/status`
+- `GET /api/employees`
+
+## 🩺 Troubleshooting
+
+- **Metro Bundler Cache Issues:** If styles or routes aren't updating, run `npx expo start -c` to clear the cache.
+- **Database Connection Error (`ECONNREFUSED`):** Ensure MySQL is running and the `.env` credentials match your local database exactly.
+- **Network Request Failed (Mobile):** If testing on a physical device, `localhost` won't work. Update `EXPO_PUBLIC_API_URL` to your computer's local IP address (e.g., `192.168.x.x`) and ensure your phone is on the same WiFi network.
+
 ## 🎨 Design System
 
 - **Colors**: Polygon brand palette (magenta, purple, red, orange, amber)
