@@ -124,12 +124,10 @@ export default function LoginScreen() {
             <View style={styles.logoContainer}>
               <Image
                 source={require('../../assets/images/logo.png')}
-                style={{ width: 80, height: 80, borderRadius: 20 }}
+                style={{ width: 120, height: 120, borderRadius: 20 }}
                 resizeMode="contain"
               />
             </View>
-            <Text style={styles.welcomeText}>Welcome Back</Text>
-            <Text style={styles.subtitleText}>Sign in to your account</Text>
           </Animated.View>
         </LinearGradient>
 
@@ -138,6 +136,9 @@ export default function LoginScreen() {
           entering={FadeInUp.delay(400).duration(500)}
           style={styles.formCard}
         >
+          <Text style={styles.welcomeText}>Welcome Back</Text>
+          <Text style={styles.subtitleText}>Sign in to your account</Text>
+
           <Animated.View style={shakeStyle}>
             <Controller
               control={control}
@@ -259,13 +260,16 @@ const getStyles = (isDark: boolean, themeColors: any) =>
     welcomeText: {
       fontFamily: typography.fonts.bold,
       fontSize: 28,
-      color: colors.white,
+      color: themeColors.text,
+      textAlign: 'center',
     },
     subtitleText: {
       fontFamily: typography.fonts.regular,
       fontSize: typography.sizes.base,
-      color: 'rgba(255,255,255,0.75)',
+      color: themeColors.textSecondary,
       marginTop: spacing.xs,
+      marginBottom: spacing.xl,
+      textAlign: 'center',
     },
     formCard: {
       flex: 1,
