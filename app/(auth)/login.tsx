@@ -2,7 +2,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import * as Haptics from 'expo-haptics';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
-import { StatusBar } from 'expo-status-bar';
+import { StatusBar, setStatusBarStyle } from 'expo-status-bar';
 import React, { useCallback, useEffect } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import {
@@ -78,6 +78,13 @@ export default function LoginScreen() {
       router.replace(user.role === 'admin' ? '/(admin)' : '/(employee)');
     }
   }, [user, router]);
+
+  useEffect(() => {
+    setStatusBarStyle('light');
+    return () => {
+      setStatusBarStyle(isDark ? 'light' : 'dark');
+    };
+  }, [isDark]);
 
   const shakeStyle = useAnimatedStyle(() => ({
     transform: [{ translateX: shakeX.value }],
