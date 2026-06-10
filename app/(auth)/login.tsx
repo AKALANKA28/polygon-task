@@ -142,6 +142,7 @@ export default function LoginScreen() {
         style={styles.formCard}
       >
         <ScrollView
+          style={{ flexGrow: 0 }}
           contentContainerStyle={styles.scrollContent}
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
@@ -231,7 +232,7 @@ const getStyles = (isDark: boolean, themeColors: any) =>
       flexGrow: 1,
     },
     header: {
-      minHeight: screenHeight * 0.35,
+      flex: 1,
       justifyContent: 'center',
       alignItems: 'center',
       overflow: 'hidden',
@@ -286,7 +287,6 @@ const getStyles = (isDark: boolean, themeColors: any) =>
       textAlign: 'center',
     },
     formCard: {
-      flex: 1,
       backgroundColor: themeColors.background,
       borderTopLeftRadius: 32,
       borderTopRightRadius: 32,
