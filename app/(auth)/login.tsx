@@ -124,7 +124,7 @@ export default function LoginScreen() {
             <View style={styles.logoContainer}>
               <Image
                 source={require('../../assets/images/logo.png')}
-                style={{ width: 120, height: 120, borderRadius: 20 }}
+                style={{ width: 160, height: 160, borderRadius: 20 }}
                 resizeMode="contain"
               />
             </View>
