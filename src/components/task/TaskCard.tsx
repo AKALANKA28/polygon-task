@@ -15,9 +15,10 @@ interface TaskCardProps {
   task: Task;
   onPress: (task: Task) => void;
   index?: number;
+  showDueToday?: boolean;
 }
 
-export default function TaskCard({ task, onPress, index = 0 }: TaskCardProps) {
+export default function TaskCard({ task, onPress, index = 0, showDueToday = false }: TaskCardProps) {
   const { isDark, themeColors } = useTheme();
 
   const priorityColors = useMemo(() => {
@@ -109,11 +110,21 @@ export default function TaskCard({ task, onPress, index = 0 }: TaskCardProps) {
 
           {/* Footer Row */}
           <View style={styles.footerRow}>
-            <View style={styles.dueDateWrapper}>
-              <SvgCalendarIcon color={isCompleted ? colors.semantic.success : themeColors.textSecondary} />
-              <Text style={[styles.dueDateText, { color: themeColors.textSecondary }]}>
-                {formattedDueDate}
-              </Text>
+            <View style={styles.footerLeft}>
+              <View style={styles.dueDateWrapper}>
+                <SvgCalendarIcon color={isCompleted ? colors.semantic.success : themeColors.textSecondary} />
+                <Text style={[styles.dueDateText, { color: themeColors.textSecondary }]}>
+                  {formattedDueDate}
+                </Text>
+              </View>
+              {showDueToday && (
+                <View style={[styles.dueTodayChip, { backgroundColor: isDark ? 'rgba(255, 31, 142, 0.12)' : 'rgba(255, 31, 142, 0.08)', borderColor: isDark ? 'rgba(255, 31, 142, 0.3)' : 'rgba(255, 31, 142, 0.2)' }]}>
+                  <Svg width={normalize(10)} height={normalize(10)} viewBox="0 0 24 24" fill="none" stroke={isDark ? '#FF80C4' : colors.brand.magenta} strokeWidth={2.2}>
+                    <Path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" strokeLinecap="round" strokeLinejoin="round" />
+                  </Svg>
+                  <Text style={[styles.dueTodayText, { color: isDark ? '#FF80C4' : colors.brand.magenta }]}>Due Today</Text>
+                </View>
+              )}
             </View>
 
             {task.assignees && task.assignees.length > 0 ? (
@@ -200,6 +211,11 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
   },
+  footerLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+  },
   dueDateWrapper: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -210,6 +226,20 @@ const styles = StyleSheet.create({
   dueDateText: {
     fontFamily: typography.fonts.medium,
     fontSize: typography.sizes.sm,
+  },
+  dueTodayChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 3,
+    paddingHorizontal: spacing.sm,
+    paddingVertical: 3,
+    borderRadius: radius.full,
+    borderWidth: 1,
+  },
+  dueTodayText: {
+    fontFamily: typography.fonts.semiBold,
+    fontSize: normalize(10),
+    letterSpacing: 0.3,
   },
   assigneeWrapper: {
     flexDirection: 'row',

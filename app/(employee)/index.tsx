@@ -218,7 +218,7 @@ export default function EmployeeDashboard() {
               </View>
               {todayTasks.length > 0 ? (
                 todayTasks.map((task, index) => (
-                  <TaskCard key={task.id} task={task} onPress={handleTaskPress} index={index} />
+                  <TaskCard key={task.id} task={task} onPress={handleTaskPress} index={index} showDueToday />
                 ))
               ) : (
                 <EmptyState title="No pending tasks for today" subtitle="All today's tasks completed!" />
