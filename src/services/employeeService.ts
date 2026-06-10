@@ -17,7 +17,7 @@ export const employeeService = {
     return (response as unknown as { data: EmployeeStats }).data;
   },
 
-  updateProfile: async (data: { name?: string; phone?: string; department?: string }): Promise<Employee> => {
+  updateProfile: async (data: { name?: string; phone?: string; department?: string; avatar_url?: string | null }): Promise<Employee> => {
     const response = await api.put('/profile', data);
     return (response as unknown as { data: Employee }).data;
   },

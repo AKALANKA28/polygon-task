@@ -9,6 +9,7 @@ import { normalize } from '../../utils/responsive';
 
 interface AvatarProps {
   name: string;
+  seed?: string | null;
   size?: number;
   fontSize?: number; // Kept for backwards compatibility
 }
@@ -21,26 +22,28 @@ const AVATAR_GRADIENTS = [
   ['#FF3D00', '#FFB800'], // Red to Amber
 ];
 
-export default function Avatar({ name, size = 40 }: AvatarProps) {
+export default function Avatar({ name, seed, size = 40 }: AvatarProps) {
+  const avatarSeed = seed || name;
+
   const gradientColors = useMemo(() => {
-    if (!name) return AVATAR_GRADIENTS[0];
+    if (!avatarSeed) return AVATAR_GRADIENTS[0];
     let hash = 0;
-    for (let i = 0; i < name.length; i++) {
-      hash = name.charCodeAt(i) + ((hash << 5) - hash);
+    for (let i = 0; i < avatarSeed.length; i++) {
+      hash = avatarSeed.charCodeAt(i) + ((hash << 5) - hash);
     }
     const index = Math.abs(hash) % AVATAR_GRADIENTS.length;
     return AVATAR_GRADIENTS[index];
-  }, [name]);
+  }, [avatarSeed]);
 
   const normalizedSize = normalize(size);
 
   const svgXml = useMemo(() => {
-    // Generate deterministic avatar using the name/seed
+    // Generate deterministic avatar using the seed
     const avatar = new DiceBearAvatar(lorelei as any, {
-      seed: name,
+      seed: avatarSeed,
     });
     return avatar.toString();
-  }, [name]);
+  }, [avatarSeed]);
 
   return (
     <View style={[styles.container, { width: normalizedSize, height: normalizedSize, borderRadius: normalizedSize / 2 }]}>

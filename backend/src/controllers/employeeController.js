@@ -101,13 +101,14 @@ exports.getProfile = async (req, res, next) => {
 // Update current user profile
 exports.updateProfile = async (req, res, next) => {
   try {
-    const { name, phone, department } = req.body;
+    const { name, phone, department, avatar_url } = req.body;
     const fields = [];
     const values = [];
 
     if (name) { fields.push('name = ?'); values.push(name); }
     if (phone !== undefined) { fields.push('phone = ?'); values.push(phone); }
     if (department !== undefined) { fields.push('department = ?'); values.push(department); }
+    if (avatar_url !== undefined) { fields.push('avatar_url = ?'); values.push(avatar_url); }
 
     if (fields.length === 0) {
       return res.status(400).json({ success: false, message: 'No fields to update' });
