@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   Dimensions,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { format, isSameDay, addDays, subDays } from 'date-fns';
 import Svg, { Path } from 'react-native-svg';
 import { colors } from '../../theme/colors';
@@ -36,6 +37,7 @@ const mockSlots = [
 
 export default function CalendarScheduleView({ tasks, onTaskPress }: CalendarScheduleViewProps) {
   const { isDark, themeColors } = useTheme();
+  const insets = useSafeAreaInsets();
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [baseDate, setBaseDate] = useState<Date>(new Date());
 
@@ -158,35 +160,48 @@ export default function CalendarScheduleView({ tasks, onTaskPress }: CalendarSch
     }
   };
 
+  const headerHeight = normalize(60) + insets.top;
+
   return (
     <View style={[styles.container, { backgroundColor: themeColors.background }]}>
       {/* Header Month Year & week switcher */}
-      <View style={styles.header}>
-        <View style={styles.headerTitleRow}>
-          <TouchableOpacity onPress={handlePrevWeek} style={styles.chevronButton}>
-            <Svg width={normalize(20)} height={normalize(20)} viewBox="0 0 24 24" fill="none" stroke={themeColors.text} strokeWidth={2.5}>
-              <Path d="M15 19l-7-7 7-7" strokeLinecap="round" strokeLinejoin="round" />
-            </Svg>
-          </TouchableOpacity>
-          
-          <Text style={[styles.monthText, { color: themeColors.text }]}>
-            {format(baseDate, 'MMM yyyy')}
-          </Text>
+      <View style={[
+        styles.headerContainer,
+        {
+          height: headerHeight,
+          paddingTop: insets.top,
+          backgroundColor: themeColors.card,
+          borderBottomWidth: 1,
+          borderBottomColor: themeColors.border,
+        }
+      ]}>
+        <View style={styles.headerContent}>
+          <View style={styles.headerTitleRow}>
+            <TouchableOpacity onPress={handlePrevWeek} style={styles.chevronButton}>
+              <Svg width={normalize(20)} height={normalize(20)} viewBox="0 0 24 24" fill="none" stroke={themeColors.text} strokeWidth={2.5}>
+                <Path d="M15 19l-7-7 7-7" strokeLinecap="round" strokeLinejoin="round" />
+              </Svg>
+            </TouchableOpacity>
+            
+            <Text style={[styles.monthText, { color: themeColors.text }]}>
+              {format(baseDate, 'MMM yyyy')}
+            </Text>
 
-          <TouchableOpacity onPress={handleNextWeek} style={styles.chevronButton}>
-            <Svg width={normalize(20)} height={normalize(20)} viewBox="0 0 24 24" fill="none" stroke={themeColors.text} strokeWidth={2.5}>
-              <Path d="M9 5l7 7-7 7" strokeLinecap="round" strokeLinejoin="round" />
+            <TouchableOpacity onPress={handleNextWeek} style={styles.chevronButton}>
+              <Svg width={normalize(20)} height={normalize(20)} viewBox="0 0 24 24" fill="none" stroke={themeColors.text} strokeWidth={2.5}>
+                <Path d="M9 5l7 7-7 7" strokeLinecap="round" strokeLinejoin="round" />
+              </Svg>
+            </TouchableOpacity>
+          </View>
+
+          <TouchableOpacity style={styles.moreButton} activeOpacity={0.6}>
+            <Svg width={normalize(20)} height={normalize(20)} viewBox="0 0 24 24" fill="none" stroke={themeColors.textSecondary} strokeWidth={2.5}>
+              <Path d="M12 12m-1 0a1 1 0 102 0 1 1 0 10-2 0" />
+              <Path d="M19 12m-1 0a1 1 0 102 0 1 1 0 10-2 0" />
+              <Path d="M5 12m-1 0a1 1 0 102 0 1 1 0 10-2 0" />
             </Svg>
           </TouchableOpacity>
         </View>
-
-        <TouchableOpacity style={styles.moreButton} activeOpacity={0.6}>
-          <Svg width={normalize(20)} height={normalize(20)} viewBox="0 0 24 24" fill="none" stroke={themeColors.textSecondary} strokeWidth={2.5}>
-            <Path d="M12 12m-1 0a1 1 0 102 0 1 1 0 10-2 0" />
-            <Path d="M19 12m-1 0a1 1 0 102 0 1 1 0 10-2 0" />
-            <Path d="M5 12m-1 0a1 1 0 102 0 1 1 0 10-2 0" />
-          </Svg>
-        </TouchableOpacity>
       </View>
 
       {/* Weekly Date Strip */}
@@ -345,13 +360,18 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
-  header: {
+  headerContainer: {
+    width: '100%',
+    position: 'relative',
+    justifyContent: 'center',
+    marginBottom: spacing.sm,
+  },
+  headerContent: {
+    flex: 1,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: spacing.lg,
-    paddingTop: spacing.lg,
-    paddingBottom: spacing.sm,
+    paddingHorizontal: spacing.xl,
   },
   headerTitleRow: {
     flexDirection: 'row',

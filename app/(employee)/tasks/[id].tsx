@@ -1,10 +1,10 @@
 import React, { useEffect, useCallback, useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator, KeyboardAvoidingView, Platform } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import Animated, { FadeIn } from 'react-native-reanimated';
 import * as Haptics from 'expo-haptics';
 import Svg, { Path } from 'react-native-svg';
-import GradientHeader from '../../../src/components/ui/GradientHeader';
+import Header from '../../../src/components/ui/Header';
 import Avatar from '../../../src/components/ui/Avatar';
 import Badge from '../../../src/components/ui/Badge';
 import { useAppDispatch, useAppSelector } from '../../../src/store/hooks';
@@ -114,11 +114,10 @@ export default function EmployeeTaskDetailScreen() {
   if (!task) {
     return (
       <View style={styles.container}>
-        <GradientHeader
+        <Header
           title="Task Detail"
-          subtitle="Loading task info..."
           showBackButton={true}
-          onBackPress={() => router.back()}
+          onBackPress={() => router.replace('/(employee)')}
         />
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color={colors.primary.DEFAULT} />
@@ -138,21 +137,26 @@ export default function EmployeeTaskDetailScreen() {
 
   return (
     <View style={styles.container}>
-      <GradientHeader
+      <Header
         title={task.title}
-        subtitle="Task details and status update"
         showBackButton={true}
-        backLabel="My Tasks"
-        onBackPress={() => router.back()}
+        backLabel=""
+        onBackPress={() => router.replace('/(employee)')}
       />
 
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
+        behavior="padding"
+        keyboardVerticalOffset={0}
+      >
       <ScrollView
         style={styles.contentCard}
         contentContainerStyle={styles.contentInner}
         showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
       >
         {/* Status Update */}
-        <Animated.View entering={FadeIn.delay(200).duration(400)}>
+        <Animated.View entering={FadeIn.delay(200).duration(400)} style={styles.statusCard}>
           <Text style={styles.sectionTitle}>Update Status</Text>
           <View style={styles.statusButtons}>
             {statusOptions.map((option) => {
@@ -202,7 +206,7 @@ export default function EmployeeTaskDetailScreen() {
         </Animated.View>
 
         {/* Details */}
-        <View style={styles.detailsSection}>
+        <View style={styles.detailsCard}>
           <View style={styles.detailRow}>
             <Text style={styles.detailLabel}>Priority</Text>
             <Badge
@@ -324,6 +328,7 @@ export default function EmployeeTaskDetailScreen() {
           </View>
         </View>
       </ScrollView>
+      </KeyboardAvoidingView>
     </View>
   );
 }
@@ -332,15 +337,32 @@ const getStyles = (isDark: boolean, themeColors: any) =>
   StyleSheet.create({
     container: { flex: 1, backgroundColor: themeColors.background },
     contentCard: {
-      flex: 1, backgroundColor: themeColors.card, marginTop: -20,
-      borderTopLeftRadius: radius['2xl'], borderTopRightRadius: radius['2xl'],
+      flex: 1,
+      backgroundColor: themeColors.background,
     },
-    contentInner: { padding: spacing.xl, paddingBottom: spacing['4xl'] },
+    contentInner: { padding: spacing.md, paddingBottom: spacing.xl },
+    statusCard: {
+      backgroundColor: themeColors.card,
+      borderRadius: radius.lg,
+      borderWidth: 1,
+      borderColor: themeColors.border,
+      padding: spacing.xl,
+      marginBottom: spacing.md,
+    },
+    detailsCard: {
+      backgroundColor: themeColors.card,
+      borderRadius: radius.lg,
+      borderWidth: 1,
+      borderColor: themeColors.border,
+      padding: spacing.xl,
+      marginBottom: spacing.md,
+      gap: spacing.base,
+    },
     sectionTitle: {
       fontFamily: typography.fonts.semiBold, fontSize: typography.sizes.md,
       color: themeColors.text, marginBottom: spacing.md,
     },
-    statusButtons: { gap: spacing.sm, marginBottom: spacing.xl },
+    statusButtons: { gap: spacing.sm },
     statusButton: {
       height: 52, borderRadius: radius.md, borderWidth: 1.5,
       flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: spacing.sm,
@@ -358,10 +380,12 @@ const getStyles = (isDark: boolean, themeColors: any) =>
     },
     loadingContainer: { flex: 1, alignItems: 'center', justifyContent: 'center' },
     commentsSection: {
-      marginTop: spacing.xl,
-      borderTopWidth: 1,
-      borderTopColor: themeColors.border,
-      paddingTop: spacing.xl,
+      backgroundColor: themeColors.card,
+      borderRadius: radius.lg,
+      borderWidth: 1,
+      borderColor: themeColors.border,
+      padding: spacing.xl,
+      marginBottom: spacing.md,
     },
     noCommentsText: {
       fontFamily: typography.fonts.regular,

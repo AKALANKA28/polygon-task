@@ -24,7 +24,7 @@ const TabIcon = ({ name, color, focused }: { name: string; color: string; focuse
 export default function EmployeeLayout() {
   const { isDark, themeColors } = useTheme();
   const pathname = usePathname();
-  const hideTabBar = pathname.startsWith('/tasks/');
+  const hideTabBar = pathname.startsWith('/tasks/') || pathname.includes('/create') || pathname.includes('/edit');
 
   return (
     <Tabs

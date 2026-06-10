@@ -2,7 +2,7 @@ import React, { useEffect, useCallback, useMemo, useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, RefreshControl, TouchableOpacity } from 'react-native';
 import Animated, { FadeIn } from 'react-native-reanimated';
 import { useRouter } from 'expo-router';
-import GradientHeader from '../../src/components/ui/GradientHeader';
+import Header from '../../src/components/ui/Header';
 import TaskCard from '../../src/components/task/TaskCard';
 import FeaturedTaskCard from '../../src/components/task/FeaturedTaskCard';
 import TaskSearchBar from '../../src/components/task/TaskSearchBar';
@@ -164,9 +164,7 @@ export default function EmployeeDashboard() {
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.primary.DEFAULT} />
         }
       >
-        <GradientHeader
-          height={120}
-          usePrimaryGradient={true}
+        <Header
           leftContent={
             <View>
               <Text style={styles.greetingText}>{greeting}</Text>
@@ -176,7 +174,7 @@ export default function EmployeeDashboard() {
           rightContent={
             <View style={{ flexDirection: 'row', alignItems: 'center' }}>
               <TouchableOpacity onPress={toggleTheme} activeOpacity={0.7} style={styles.themeButton}>
-                <Svg width={normalize(20)} height={normalize(20)} viewBox="0 0 24 24" fill="none" stroke={colors.white} strokeWidth={2}>
+                <Svg width={normalize(20)} height={normalize(20)} viewBox="0 0 24 24" fill="none" stroke={themeColors.text} strokeWidth={2}>
                   {isDark ? (
                     <Path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42M12 7a5 5 0 100 10 5 5 0 000-10z" strokeLinecap="round" strokeLinejoin="round" />
                   ) : (
@@ -256,7 +254,7 @@ export default function EmployeeDashboard() {
             )}
           </View>
 
-          <View style={{ height: 80 }} />
+          <View style={{ height: spacing.xl }} />
         </View>
       </ScrollView>
     </View>
@@ -294,12 +292,12 @@ const getStyles = (isDark: boolean, themeColors: any) => StyleSheet.create({
   greetingText: {
     fontFamily: typography.fonts.regular,
     fontSize: typography.sizes.base,
-    color: 'rgba(255, 255, 255, 0.75)',
+    color: themeColors.textSecondary,
   },
   nameText: {
     fontFamily: typography.fonts.bold,
     fontSize: normalize(22),
-    color: colors.white,
+    color: themeColors.text,
     marginTop: normalize(2),
   },
   themeButton: {

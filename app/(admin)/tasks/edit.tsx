@@ -10,8 +10,9 @@ import {
   Modal,
   FlatList,
   Dimensions,
+  ActivityIndicator,
 } from 'react-native';
-import { useRouter } from 'expo-router';
+import { useRouter, useLocalSearchParams } from 'expo-router';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as Haptics from 'expo-haptics';
@@ -21,7 +22,7 @@ import Input from '../../../src/components/ui/Input';
 import Button from '../../../src/components/ui/Button';
 import Avatar from '../../../src/components/ui/Avatar';
 import { useAppDispatch, useAppSelector } from '../../../src/store/hooks';
-import { createTask } from '../../../src/store/slices/tasksSlice';
+import { fetchTaskById, updateTask } from '../../../src/store/slices/tasksSlice';
 import { fetchEmployees } from '../../../src/store/slices/employeesSlice';
 import { taskSchema, TaskFormData } from '../../../src/utils/validators';
 import { toast } from '../../../src/utils/toast';
@@ -49,17 +50,20 @@ const getPriorityColorsAdaptive = (priority: 'low' | 'medium' | 'high', isDark: 
   }[priority];
 };
 
-export default function CreateTaskScreen() {
+export default function EditTaskScreen() {
+  const { id } = useLocalSearchParams<{ id: string }>();
   const dispatch = useAppDispatch();
   const router = useRouter();
   const { items: employees } = useAppSelector((s) => s.employees);
+  const { selectedTask: task, isLoading } = useAppSelector((s) => s.tasks);
+  
   const [showEmployeeModal, setShowEmployeeModal] = useState(false);
   const [showCalendarModal, setShowCalendarModal] = useState(false);
   
-  const [selectedEmployees, setSelectedEmployees] = useState<Employee[]>([]);
+  const [selectedEmployees, setSelectedEmployees] = useState<any[]>([]);
   const [subtasks, setSubtasks] = useState<Record<number, string>>({});
   const [project, setProject] = useState('');
-  const [selectedDate, setSelectedDate] = useState<Date>(new Date(Date.now() + 86400000)); // Default tomorrow
+  const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [calendarDate, setCalendarDate] = useState<Date>(new Date());
   
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -71,6 +75,7 @@ export default function CreateTaskScreen() {
     control,
     handleSubmit,
     setValue,
+    reset,
     formState: { errors },
   } = useForm<TaskFormData>({
     resolver: zodResolver(taskSchema),
@@ -79,13 +84,48 @@ export default function CreateTaskScreen() {
       description: '',
       priority: 'medium',
       assigned_to: [],
-      due_date: new Date(Date.now() + 86400000).toISOString().split('T')[0],
+      due_date: '',
     },
   });
 
   useEffect(() => {
     dispatch(fetchEmployees());
-  }, [dispatch]);
+    if (id) {
+      dispatch(fetchTaskById(Number(id)));
+    }
+  }, [dispatch, id]);
+
+  useEffect(() => {
+    if (task && id && Number(task.id) === Number(id)) {
+      const projectRegex = /^\[Project:\s*([^\]]+)\]\s*(.*)$/s;
+      const match = task.description ? task.description.match(projectRegex) : null;
+      const projectName = match ? match[1].trim() : '';
+      const descriptionText = match ? match[2].trim() : (task.description || '');
+      
+      setProject(projectName);
+      
+      const taskDate = task.due_date ? new Date(task.due_date) : new Date(Date.now() + 86400000);
+      setSelectedDate(taskDate);
+      setCalendarDate(taskDate);
+      
+      if (task.assignees) {
+        setSelectedEmployees(task.assignees);
+        const initialSubtasks: Record<number, string> = {};
+        task.assignees.forEach((a) => {
+          initialSubtasks[a.id] = a.subtask || '';
+        });
+        setSubtasks(initialSubtasks);
+        
+        reset({
+          title: task.title,
+          description: descriptionText,
+          priority: task.priority,
+          assigned_to: task.assignees.map(a => ({ id: a.id, subtask: a.subtask || null })),
+          due_date: task.due_date || new Date(Date.now() + 86400000).toISOString().split('T')[0],
+        });
+      }
+    }
+  }, [task, id, reset]);
 
   // Sync date changes to hook form
   useEffect(() => {
@@ -96,24 +136,28 @@ export default function CreateTaskScreen() {
     async (data: TaskFormData) => {
       setIsSubmitting(true);
       try {
-        // Construct description with project prefix if present
         const fullDescription = project.trim()
           ? `[Project: ${project.trim()}] ${data.description?.trim() || ''}`
           : data.description?.trim() || '';
 
-        const result = await dispatch(createTask({
-          title: data.title.trim(),
-          description: fullDescription || undefined,
-          priority: data.priority,
-          assigned_to: data.assigned_to,
-          due_date: data.due_date,
+        const result = await dispatch(updateTask({
+          id: Number(id),
+          dto: {
+            title: data.title.trim(),
+            description: fullDescription || undefined,
+            priority: data.priority,
+            assigned_to: data.assigned_to,
+            due_date: data.due_date,
+          }
         }));
-        if (createTask.fulfilled.match(result)) {
+        if (updateTask.fulfilled.match(result)) {
           Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-          toast.success('Task created successfully!');
+          toast.success('Task updated successfully!');
+          // Force refresh task details
+          dispatch(fetchTaskById(Number(id)));
           router.back();
         } else {
-          const errorMsg = (result.payload as string) || 'Failed to create task';
+          const errorMsg = (result.payload as string) || 'Failed to update task';
           toast.error(errorMsg);
         }
       } catch {
@@ -122,7 +166,7 @@ export default function CreateTaskScreen() {
         setIsSubmitting(false);
       }
     },
-    [dispatch, router, project]
+    [dispatch, id, router, project]
   );
 
   const handleEmployeeToggle = useCallback(
@@ -200,12 +244,22 @@ export default function CreateTaskScreen() {
     setCalendarDate(new Date(calendarDate.getFullYear(), calendarDate.getMonth() + 1, 1));
   };
 
+  if (isLoading && !task) {
+    return (
+      <View style={styles.container}>
+        <Header title="Edit Task" showBackButton={true} onBackPress={() => router.back()} />
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color={colors.primary.DEFAULT} />
+        </View>
+      </View>
+    );
+  }
+
   return (
     <View style={styles.container}>
       <Header
-        title="Create Task"
+        title="Edit Task"
         showBackButton={true}
-        backLabel="Tasks"
         onBackPress={() => router.back()}
       />
       <KeyboardAvoidingView
@@ -358,7 +412,7 @@ export default function CreateTaskScreen() {
 
           <View style={styles.submitContainer}>
             <Button
-              title="Create Task"
+              title="Save Changes"
               onPress={handleSubmit(onSubmit)}
               isLoading={isSubmitting}
             />
@@ -709,5 +763,9 @@ const getStyles = (isDark: boolean, themeColors: any) =>
       color: colors.white,
       fontFamily: typography.fonts.bold,
     },
+    loadingContainer: {
+      flex: 1,
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
   });
-

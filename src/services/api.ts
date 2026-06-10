@@ -2,6 +2,7 @@ import axios from 'axios';
 import { storage } from '../utils/storage';
 
 const BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:3000/api';
+console.log('[API] Initializing Axios client. BASE_URL =', BASE_URL);
 
 export const api = axios.create({
   baseURL: BASE_URL,
@@ -22,6 +23,14 @@ api.interceptors.request.use(async (config) => {
 api.interceptors.response.use(
   (response) => response.data,
   async (error) => {
+    console.error('[API Error Interceptor] Request failed:', {
+      message: error.message,
+      code: error.code,
+      url: error.config?.url,
+      method: error.config?.method,
+      status: error.response?.status,
+      responseData: error.response?.data,
+    });
     if (error.response?.status === 401) {
       await storage.removeItem('token');
       await storage.removeItem('user');

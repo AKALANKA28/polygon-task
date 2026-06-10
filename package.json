@@ -11,6 +11,8 @@
     "lint": "expo lint"
   },
   "dependencies": {
+    "@dicebear/core": "^10.1.0",
+    "@dicebear/styles": "^10.2.0",
     "@expo-google-fonts/poppins": "^0.4.1",
     "@hookform/resolvers": "^5.4.0",
     "@react-native-async-storage/async-storage": "2.2.0",

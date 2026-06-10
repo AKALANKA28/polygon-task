@@ -5,7 +5,7 @@ import { FlashList } from '@shopify/flash-list';
 const TypedFlashList = FlashList as any;
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import GradientHeader from '../../../src/components/ui/GradientHeader';
+import Header from '../../../src/components/ui/Header';
 import TaskCard from '../../../src/components/task/TaskCard';
 import TaskSearchBar from '../../../src/components/task/TaskSearchBar';
 import TaskFilterBar from '../../../src/components/task/TaskFilterBar';
@@ -81,7 +81,7 @@ export default function AllTasksScreen() {
 
   return (
     <View style={styles.container}>
-      <GradientHeader title="All Tasks" subtitle="Manage and assign work" />
+      <Header title="All Tasks" />
 
       <View style={styles.content}>
         <TaskSearchBar value={searchQuery} onChangeText={handleSearchChange} />

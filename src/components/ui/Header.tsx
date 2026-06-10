@@ -1,40 +1,34 @@
-import React from 'react';
-import { StyleSheet, Text, View, TouchableOpacity } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
+import React from 'react';
+import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Svg, { Path } from 'react-native-svg';
-import { colors } from '../../theme/colors';
-import { typography } from '../../theme/typography';
 import { spacing } from '../../theme/spacing';
 import { useTheme } from '../../theme/ThemeContext';
+import { typography } from '../../theme/typography';
 import { normalize } from '../../utils/responsive';
 
-interface GradientHeaderProps {
+interface HeaderProps {
   height?: number;
   title?: string;
-  subtitle?: string;
   leftContent?: React.ReactNode;
   rightContent?: React.ReactNode;
   children?: React.ReactNode;
   showBackButton?: boolean;
   onBackPress?: () => void;
   backLabel?: string;
-  usePrimaryGradient?: boolean;
 }
 
-export default function GradientHeader({
-  height = 140,
+export default function Header({
+  height = 65,
   title,
-  subtitle,
   leftContent,
   rightContent,
   children,
   showBackButton = false,
   onBackPress,
   backLabel,
-  usePrimaryGradient = true,
-}: GradientHeaderProps) {
+}: HeaderProps) {
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const { themeColors } = useTheme();
@@ -50,8 +44,7 @@ export default function GradientHeader({
   };
 
   const renderContent = () => {
-    const textColor = usePrimaryGradient ? colors.white : themeColors.text;
-    const subColor = usePrimaryGradient ? 'rgba(255, 255, 255, 0.75)' : themeColors.textSecondary;
+    const textColor = themeColors.text;
 
     if (children) {
       return (
@@ -75,72 +68,40 @@ export default function GradientHeader({
 
     return (
       <View style={styles.defaultLayout}>
+        {/* Centered Title Layer */}
+        {title && (
+          <View style={styles.titleContainer} pointerEvents="none">
+            <Text style={[styles.title, { color: textColor }]} numberOfLines={1}>
+              {title}
+            </Text>
+          </View>
+        )}
+
+        {/* Left Container */}
         <View style={styles.leftContainer}>
           {showBackButton ? (
-            <View>
-              <TouchableOpacity onPress={handleBack} activeOpacity={0.7} style={styles.backButton}>
-                <Svg width={normalize(18)} height={normalize(18)} viewBox="0 0 24 24" fill="none" stroke={textColor} strokeWidth={2.5}>
-                  <Path d="M15 19l-7-7 7-7" strokeLinecap="round" strokeLinejoin="round" />
-                </Svg>
-                {backLabel && (
-                  <Text style={[styles.backText, { color: textColor }]}>
-                    {backLabel}
-                  </Text>
-                )}
-              </TouchableOpacity>
-              {title && (
-                <View style={styles.backTitleRow}>
-                  <Text style={[styles.title, { color: textColor }]} numberOfLines={1}>
-                    {title}
-                  </Text>
-                  {subtitle && (
-                    <Text style={[styles.subtitle, { color: subColor }]} numberOfLines={1}>
-                      {subtitle}
-                    </Text>
-                  )}
-                </View>
+            <TouchableOpacity onPress={handleBack} activeOpacity={0.7} style={styles.backButton}>
+              <Svg width={normalize(18)} height={normalize(18)} viewBox="0 0 24 24" fill="none" stroke={textColor} strokeWidth={2.5}>
+                <Path d="M15 19l-7-7 7-7" strokeLinecap="round" strokeLinejoin="round" />
+              </Svg>
+              {backLabel && (
+                <Text style={[styles.backText, { color: textColor }]}>
+                  {backLabel}
+                </Text>
               )}
-            </View>
-          ) : leftContent ? (
-            leftContent
+            </TouchableOpacity>
           ) : (
-            <View>
-              {title && (
-                <Text style={[styles.title, { color: textColor }]} numberOfLines={1}>
-                  {title}
-                </Text>
-              )}
-              {subtitle && (
-                <Text style={[styles.subtitle, { color: subColor }]} numberOfLines={1}>
-                  {subtitle}
-                </Text>
-              )}
-            </View>
+            leftContent
           )}
         </View>
-        {rightContent && <View style={styles.rightContainer}>{rightContent}</View>}
+
+        {/* Right Container */}
+        <View style={styles.rightContainer}>
+          {rightContent}
+        </View>
       </View>
     );
   };
-
-  if (usePrimaryGradient) {
-    return (
-      <LinearGradient
-        colors={colors.primary.gradient as unknown as [string, string]}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 1 }}
-        style={[
-          styles.container,
-          {
-            height: containerHeight,
-            paddingTop: insets.top,
-          },
-        ]}
-      >
-        <View style={styles.content}>{renderContent()}</View>
-      </LinearGradient>
-    );
-  }
 
   return (
     <View
@@ -149,7 +110,9 @@ export default function GradientHeader({
         {
           height: containerHeight,
           paddingTop: insets.top,
-          backgroundColor: themeColors.background,
+          backgroundColor: themeColors.card,
+          borderBottomWidth: 1,
+          borderBottomColor: themeColors.border,
         },
       ]}
     >
@@ -163,6 +126,7 @@ const styles = StyleSheet.create({
     width: '100%',
     position: 'relative',
     justifyContent: 'center',
+    marginBottom: spacing.sm,
   },
   content: {
     flex: 1,
@@ -180,13 +144,27 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
   },
-  leftContainer: {
-    flex: 1,
+  titleContainer: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    top: 0,
+    bottom: 0,
     justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 1,
+  },
+  leftContainer: {
+    justifyContent: 'center',
+    alignItems: 'flex-start',
+    zIndex: 2,
+    minWidth: 40,
   },
   rightContainer: {
-    marginLeft: spacing.md,
     justifyContent: 'center',
+    alignItems: 'flex-end',
+    zIndex: 2,
+    minWidth: 40,
   },
   backButton: {
     flexDirection: 'row',
@@ -211,16 +189,9 @@ const styles = StyleSheet.create({
     fontSize: typography.sizes.base,
     marginLeft: spacing.xs,
   },
-  backTitleRow: {
-    marginTop: spacing.xs,
-  },
   title: {
     fontFamily: typography.fonts.bold,
-    fontSize: typography.sizes['2xl'],
-  },
-  subtitle: {
-    fontFamily: typography.fonts.regular,
-    fontSize: typography.sizes.sm + 1,
-    marginTop: spacing.xs - 2,
+    fontSize: typography.sizes.lg,
+    textAlign: 'center',
   },
 });

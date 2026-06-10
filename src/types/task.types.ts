@@ -5,6 +5,7 @@ export interface TaskAssignee {
   id: number;
   name: string;
   avatar_url: string | null;
+  subtask?: string | null;
 }
 
 export interface TaskCreator {
@@ -32,7 +33,7 @@ export interface CreateTaskDto {
   title: string;
   description?: string;
   priority: TaskPriority;
-  assigned_to: number | number[];
+  assigned_to: number | number[] | { id: number; subtask?: string | null }[];
   due_date?: string;
 }
 
@@ -41,7 +42,7 @@ export interface UpdateTaskDto {
   description?: string;
   status?: TaskStatus;
   priority?: TaskPriority;
-  assigned_to?: number | number[];
+  assigned_to?: number | number[] | { id: number; subtask?: string | null }[];
   due_date?: string;
 }
 

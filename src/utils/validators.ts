@@ -9,7 +9,14 @@ export const taskSchema = z.object({
   title: z.string().min(3, 'Title must be at least 3 characters').max(200, 'Title must be under 200 characters'),
   description: z.string().optional(),
   priority: z.enum(['low', 'medium', 'high']),
-  assigned_to: z.number({ required_error: 'Please assign to an employee' }),
+  assigned_to: z.union([
+    z.number(),
+    z.array(z.number()),
+    z.array(z.object({
+      id: z.number(),
+      subtask: z.string().optional().nullable()
+    })).min(1, 'Please assign to at least one employee')
+  ], { required_error: 'Please assign to at least one employee' }),
   due_date: z.string().optional(),
 });
 

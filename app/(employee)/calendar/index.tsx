@@ -29,7 +29,7 @@ export default function EmployeeCalendarScreen() {
   };
 
   return (
-    <View style={[styles.container, { backgroundColor: themeColors.background, paddingTop: insets.top }]}>
+    <View style={[styles.container, { backgroundColor: themeColors.background }]}>
       <CalendarScheduleView tasks={tasks} onTaskPress={handleTaskPress} />
     </View>
   );

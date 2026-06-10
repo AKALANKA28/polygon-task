@@ -1,9 +1,9 @@
 import React, { useEffect, useCallback, useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert, KeyboardAvoidingView } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import * as Haptics from 'expo-haptics';
 import Svg, { Path } from 'react-native-svg';
-import GradientHeader from '../../../src/components/ui/GradientHeader';
+import Header from '../../../src/components/ui/Header';
 import Avatar from '../../../src/components/ui/Avatar';
 import Badge from '../../../src/components/ui/Badge';
 import TaskStatusBadge from '../../../src/components/task/TaskStatusBadge';
@@ -115,9 +115,8 @@ export default function TaskDetailScreen() {
   if (!task) {
     return (
       <View style={styles.container}>
-        <GradientHeader
+        <Header
           title="Task Detail"
-          subtitle="Loading task info..."
           showBackButton={true}
           onBackPress={() => router.back()}
         />
@@ -133,27 +132,41 @@ export default function TaskDetailScreen() {
 
   return (
     <View style={styles.container}>
-      <GradientHeader
+      <Header
         title={task.title}
-        subtitle="Task details and discussion"
         showBackButton={true}
-        onBackPress={() => router.back()}
+        onBackPress={() => router.replace('/(admin)/tasks')}
         rightContent={
-          <TouchableOpacity onPress={handleDelete} style={styles.backButton}>
-            <Svg width={normalize(20)} height={normalize(20)} viewBox="0 0 24 24" fill="none" stroke={colors.white} strokeWidth={2}>
-              <Path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2M10 11v6M14 11v6" strokeLinecap="round" strokeLinejoin="round" />
-            </Svg>
-          </TouchableOpacity>
+          <View style={{ flexDirection: 'row', gap: spacing.md, alignItems: 'center' }}>
+            <TouchableOpacity onPress={() => router.push(`/(admin)/tasks/edit?id=${task.id}`)} style={styles.backButton}>
+              <Svg width={normalize(20)} height={normalize(20)} viewBox="0 0 24 24" fill="none" stroke={themeColors.text} strokeWidth={2}>
+                <Path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7M18.5 2.5a2.121 2.121 0 113 3L12 15l-4 1 1-4 9.5-9.5z" strokeLinecap="round" strokeLinejoin="round" />
+              </Svg>
+            </TouchableOpacity>
+            <TouchableOpacity onPress={handleDelete} style={styles.backButton}>
+              <Svg width={normalize(20)} height={normalize(20)} viewBox="0 0 24 24" fill="none" stroke={themeColors.text} strokeWidth={2}>
+                <Path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2M10 11v6M14 11v6" strokeLinecap="round" strokeLinejoin="round" />
+              </Svg>
+            </TouchableOpacity>
+          </View>
         }
       />
 
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
+        behavior="padding"
+        keyboardVerticalOffset={0}
+      >
       <ScrollView
         style={styles.contentCard}
         contentContainerStyle={styles.contentInner}
         showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
       >
-        <Text style={styles.sectionTitle}>Update Status</Text>
-        <View style={styles.statusButtons}>
+        {/* Status Update */}
+        <View style={styles.statusCard}>
+          <Text style={styles.sectionTitle}>Update Status</Text>
+          <View style={styles.statusButtons}>
           {(['pending', 'in_progress', 'completed'] as TaskStatus[]).map((status) => {
             const isSelected = task.status === status;
             return (
@@ -177,9 +190,11 @@ export default function TaskDetailScreen() {
               </TouchableOpacity>
             );
           })}
+          </View>
         </View>
 
-        <View style={styles.detailsSection}>
+        {/* Details */}
+        <View style={styles.detailsCard}>
           <View style={styles.detailRow}>
             <Text style={styles.detailLabel}>Priority</Text>
             <Badge
@@ -195,9 +210,22 @@ export default function TaskDetailScreen() {
               <Text style={styles.detailLabel}>Assigned to</Text>
               <View style={{ gap: spacing.sm, alignItems: 'flex-end' }}>
                 {task.assignees.map((assignee) => (
-                  <View key={assignee.id} style={[styles.detailValue, { marginVertical: 2 }]}>
-                    <Avatar name={assignee.name} size={normalize(24)} />
-                    <Text style={styles.detailText}>{assignee.name}</Text>
+                  <View key={assignee.id} style={{ alignItems: 'flex-end', marginVertical: 2 }}>
+                    <View style={styles.detailValue}>
+                      <Avatar name={assignee.name} size={normalize(24)} />
+                      <Text style={styles.detailText}>{assignee.name}</Text>
+                    </View>
+                    {assignee.subtask ? (
+                      <Text style={{
+                        fontFamily: typography.fonts.regular,
+                        fontSize: typography.sizes.sm,
+                        color: themeColors.textSecondary,
+                        marginTop: 2,
+                        textAlign: 'right',
+                      }}>
+                        Subtask: {assignee.subtask}
+                      </Text>
+                    ) : null}
                   </View>
                 ))}
               </View>
@@ -205,9 +233,22 @@ export default function TaskDetailScreen() {
           ) : task.assignee ? (
             <View style={styles.detailRow}>
               <Text style={styles.detailLabel}>Assigned to</Text>
-              <View style={styles.detailValue}>
-                <Avatar name={task.assignee.name} size={normalize(24)} />
-                <Text style={styles.detailText}>{task.assignee.name}</Text>
+              <View style={{ alignItems: 'flex-end' }}>
+                <View style={styles.detailValue}>
+                  <Avatar name={task.assignee.name} size={normalize(24)} />
+                  <Text style={styles.detailText}>{task.assignee.name}</Text>
+                </View>
+                {task.assignee.subtask ? (
+                  <Text style={{
+                    fontFamily: typography.fonts.regular,
+                    fontSize: typography.sizes.sm,
+                    color: themeColors.textSecondary,
+                    marginTop: 2,
+                    textAlign: 'right',
+                  }}>
+                    Subtask: {task.assignee.subtask}
+                  </Text>
+                ) : null}
               </View>
             </View>
           ) : null}
@@ -310,6 +351,7 @@ export default function TaskDetailScreen() {
           />
         </View>
       </ScrollView>
+      </KeyboardAvoidingView>
     </View>
   );
 }
@@ -345,14 +387,28 @@ const getStyles = (isDark: boolean, themeColors: any) =>
     },
     contentCard: {
       flex: 1,
-      backgroundColor: themeColors.card,
-      marginTop: -20,
-      borderTopLeftRadius: radius['2xl'],
-      borderTopRightRadius: radius['2xl'],
+      backgroundColor: themeColors.background,
     },
     contentInner: {
+      padding: spacing.md,
+      paddingBottom: spacing.xl,
+    },
+    statusCard: {
+      backgroundColor: themeColors.card,
+      borderRadius: radius.lg,
+      borderWidth: 1,
+      borderColor: themeColors.border,
       padding: spacing.xl,
-      paddingBottom: spacing['4xl'],
+      marginBottom: spacing.md,
+    },
+    detailsCard: {
+      backgroundColor: themeColors.card,
+      borderRadius: radius.lg,
+      borderWidth: 1,
+      borderColor: themeColors.border,
+      padding: spacing.xl,
+      marginBottom: spacing.md,
+      gap: spacing.base,
     },
     sectionTitle: {
       fontFamily: typography.fonts.semiBold,
@@ -362,7 +418,6 @@ const getStyles = (isDark: boolean, themeColors: any) =>
     },
     statusButtons: {
       gap: spacing.sm,
-      marginBottom: spacing.xl,
     },
     statusButton: {
       height: 52,
@@ -434,10 +489,12 @@ const getStyles = (isDark: boolean, themeColors: any) =>
       color: themeColors.textSecondary,
     },
     commentsSection: {
-      marginTop: spacing.xl,
-      borderTopWidth: 1,
-      borderTopColor: themeColors.border,
-      paddingTop: spacing.xl,
+      backgroundColor: themeColors.card,
+      borderRadius: radius.lg,
+      borderWidth: 1,
+      borderColor: themeColors.border,
+      padding: spacing.xl,
+      marginBottom: spacing.md,
     },
     noCommentsText: {
       fontFamily: typography.fonts.regular,

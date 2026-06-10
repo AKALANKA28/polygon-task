@@ -20,6 +20,7 @@ export const login = createAsyncThunk(
       await storage.setItem('user', JSON.stringify(data.user));
       return data;
     } catch (error: unknown) {
+      console.error('[auth/login error]:', error);
       const err = error as { response?: { data?: { message?: string } } };
       return rejectWithValue(err.response?.data?.message || 'Login failed');
     }

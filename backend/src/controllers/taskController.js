@@ -7,7 +7,7 @@ exports.getAll = async (req, res, next) => {
       SELECT t.*, 
         JSON_OBJECT('id', c.id, 'name', c.name) as creator,
         (
-          SELECT JSON_ARRAYAGG(JSON_OBJECT('id', u.id, 'name', u.name, 'avatar_url', u.avatar_url))
+          SELECT JSON_ARRAYAGG(JSON_OBJECT('id', u.id, 'name', u.name, 'avatar_url', u.avatar_url, 'subtask', ta.subtask))
           FROM task_assignees ta
           JOIN users u ON ta.user_id = u.id
           WHERE ta.task_id = t.id
@@ -44,7 +44,7 @@ exports.getById = async (req, res, next) => {
       `SELECT t.*, 
         JSON_OBJECT('id', c.id, 'name', c.name) as creator,
         (
-          SELECT JSON_ARRAYAGG(JSON_OBJECT('id', u.id, 'name', u.name, 'avatar_url', u.avatar_url))
+          SELECT JSON_ARRAYAGG(JSON_OBJECT('id', u.id, 'name', u.name, 'avatar_url', u.avatar_url, 'subtask', ta.subtask))
           FROM task_assignees ta
           JOIN users u ON ta.user_id = u.id
           WHERE ta.task_id = t.id
@@ -86,23 +86,32 @@ exports.create = async (req, res, next) => {
     );
     const taskId = result.insertId;
 
-    let assigneeIds = [];
+    let assigneesList = [];
     if (Array.isArray(assigned_to)) {
-      assigneeIds = assigned_to;
+      assigneesList = assigned_to.map(item => {
+        if (typeof item === 'object' && item !== null) {
+          return { id: Number(item.id), subtask: item.subtask || null };
+        }
+        return { id: Number(item), subtask: null };
+      });
     } else if (assigned_to) {
-      assigneeIds = [assigned_to];
+      if (typeof assigned_to === 'object' && assigned_to !== null) {
+        assigneesList = [{ id: Number(assigned_to.id), subtask: assigned_to.subtask || null }];
+      } else {
+        assigneesList = [{ id: Number(assigned_to), subtask: null }];
+      }
     }
 
-    if (assigneeIds.length > 0) {
-      const values = assigneeIds.map(uid => [taskId, uid]);
-      await pool.query('INSERT INTO task_assignees (task_id, user_id) VALUES ?', [values]);
+    if (assigneesList.length > 0) {
+      const values = assigneesList.map(a => [taskId, a.id, a.subtask]);
+      await pool.query('INSERT INTO task_assignees (task_id, user_id, subtask) VALUES ?', [values]);
     }
 
     const [rows] = await pool.query(
       `SELECT t.*, 
         JSON_OBJECT('id', c.id, 'name', c.name) as creator,
         (
-          SELECT JSON_ARRAYAGG(JSON_OBJECT('id', u.id, 'name', u.name, 'avatar_url', u.avatar_url))
+          SELECT JSON_ARRAYAGG(JSON_OBJECT('id', u.id, 'name', u.name, 'avatar_url', u.avatar_url, 'subtask', ta.subtask))
           FROM task_assignees ta
           JOIN users u ON ta.user_id = u.id
           WHERE ta.task_id = t.id
@@ -140,16 +149,25 @@ exports.update = async (req, res, next) => {
 
     const fields = [];
     const values = [];
-    let assigneeIds = null;
+    let assigneesList = null;
 
     for (const [key, value] of Object.entries(updates)) {
       if (key === 'assigned_to') {
         if (Array.isArray(value)) {
-          assigneeIds = value;
+          assigneesList = value.map(item => {
+            if (typeof item === 'object' && item !== null) {
+              return { id: Number(item.id), subtask: item.subtask || null };
+            }
+            return { id: Number(item), subtask: null };
+          });
         } else if (value) {
-          assigneeIds = [value];
+          if (typeof value === 'object' && value !== null) {
+            assigneesList = [{ id: Number(value.id), subtask: value.subtask || null }];
+          } else {
+            assigneesList = [{ id: Number(value), subtask: null }];
+          }
         } else {
-          assigneeIds = [];
+          assigneesList = [];
         }
       } else if (['title', 'description', 'status', 'priority', 'due_date'].includes(key)) {
         fields.push(`${key} = ?`);
@@ -162,11 +180,11 @@ exports.update = async (req, res, next) => {
       await pool.query(`UPDATE tasks SET ${fields.join(', ')} WHERE id = ?`, values);
     }
 
-    if (assigneeIds !== null) {
+    if (assigneesList !== null) {
       await pool.query('DELETE FROM task_assignees WHERE task_id = ?', [id]);
-      if (assigneeIds.length > 0) {
-        const values = assigneeIds.map(uid => [id, uid]);
-        await pool.query('INSERT INTO task_assignees (task_id, user_id) VALUES ?', [values]);
+      if (assigneesList.length > 0) {
+        const values = assigneesList.map(a => [id, a.id, a.subtask]);
+        await pool.query('INSERT INTO task_assignees (task_id, user_id, subtask) VALUES ?', [values]);
       }
     }
 
@@ -174,7 +192,7 @@ exports.update = async (req, res, next) => {
       `SELECT t.*, 
         JSON_OBJECT('id', c.id, 'name', c.name) as creator,
         (
-          SELECT JSON_ARRAYAGG(JSON_OBJECT('id', u.id, 'name', u.name, 'avatar_url', u.avatar_url))
+          SELECT JSON_ARRAYAGG(JSON_OBJECT('id', u.id, 'name', u.name, 'avatar_url', u.avatar_url, 'subtask', ta.subtask))
           FROM task_assignees ta
           JOIN users u ON ta.user_id = u.id
           WHERE ta.task_id = t.id

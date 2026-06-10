@@ -1,4 +1,4 @@
-import React, { useEffect, useCallback, useState } from 'react';
+import React, { useEffect, useCallback, useState, useRef } from 'react';
 import {
   View,
   StyleSheet,
@@ -8,18 +8,17 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   Keyboard,
-  Platform,
-  KeyboardAvoidingView,
   Dimensions,
+  Platform,
 } from 'react-native';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as Haptics from 'expo-haptics';
 import Modal from 'react-native-modal';
-import { LinearGradient } from 'expo-linear-gradient';
 import Svg, { Path } from 'react-native-svg';
+import { useRouter } from 'expo-router';
 
-import GradientHeader from '../../../src/components/ui/GradientHeader';
+import Header from '../../../src/components/ui/Header';
 import EmployeeProgressCard from '../../../src/components/employee/EmployeeProgressCard';
 import Skeleton from '../../../src/components/ui/Skeleton';
 import EmptyState from '../../../src/components/ui/EmptyState';
@@ -30,7 +29,6 @@ import Avatar from '../../../src/components/ui/Avatar';
 import { useAppDispatch, useAppSelector } from '../../../src/store/hooks';
 import {
   fetchEmployees,
-  createEmployee,
   updateEmployee,
   deleteEmployee,
 } from '../../../src/store/slices/employeesSlice';
@@ -41,47 +39,55 @@ import { useTheme } from '../../../src/theme/ThemeContext';
 import { normalize } from '../../../src/utils/responsive';
 import { toast } from '../../../src/utils/toast';
 import {
-  createEmployeeSchema,
   updateEmployeeSchema,
-  CreateEmployeeFormData,
   UpdateEmployeeFormData,
 } from '../../../src/utils/validators';
 import type { Employee } from '../../../src/types/employee.types';
 
 export default function EmployeesScreen() {
   const dispatch = useAppDispatch();
+  const router = useRouter();
   const { items: employees, isLoading } = useAppSelector((s) => s.employees);
+  const [keyboardHeight, setKeyboardHeight] = useState(0);
   const [refreshing, setRefreshing] = useState(false);
+
+  useEffect(() => {
+    const showEvent = Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow';
+    const hideEvent = Platform.OS === 'ios' ? 'keyboardWillHide' : 'keyboardDidHide';
+
+    const showSubscription = Keyboard.addListener(showEvent, (e) => {
+      setKeyboardHeight(e.endCoordinates.height);
+    });
+    const hideSubscription = Keyboard.addListener(hideEvent, () => {
+      setKeyboardHeight(0);
+    });
+
+    return () => {
+      showSubscription.remove();
+      hideSubscription.remove();
+    };
+  }, []);
+
   const { isDark, themeColors } = useTheme();
   const styles = getStyles(isDark, themeColors);
 
   // Modal display states
   const [showActionSheet, setShowActionSheet] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
-  const [showCreateSheet, setShowCreateSheet] = useState(false);
   const [showEditSheet, setShowEditSheet] = useState(false);
 
   const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
 
-  // Create Form Hook
-  const {
-    control: createControl,
-    handleSubmit: handleCreateSubmit,
-    reset: resetCreateForm,
-    formState: { errors: createErrors },
-  } = useForm<CreateEmployeeFormData>({
-    resolver: zodResolver(createEmployeeSchema),
-    defaultValues: {
-      name: '',
-      email: '',
-      department: '',
-      phone: '',
-      password: '',
-      confirmPassword: '',
-    },
-  });
+  // ScrollView refs for keyboard scroll-to-field
+  const editScrollRef = useRef<ScrollView>(null);
+
+  // Scroll offsets for each input position (approximate)
+  const INPUT_HEIGHT = 76; // label + input + margin
+  const scrollToField = (ref: React.RefObject<ScrollView | null>, fieldIndex: number) => {
+    ref.current?.scrollTo({ y: fieldIndex * INPUT_HEIGHT, animated: true });
+  };
 
   // Edit Form Hook
   const {
@@ -134,36 +140,7 @@ export default function EmployeesScreen() {
     }, 250);
   };
 
-  const onCreateSubmit = async (data: CreateEmployeeFormData) => {
-    setIsSubmitting(true);
-    try {
-      const result = await dispatch(
-        createEmployee({
-          name: data.name.trim(),
-          email: data.email.trim(),
-          department: data.department?.trim() || undefined,
-          phone: data.phone?.trim() || undefined,
-          password: data.password,
-        })
-      );
 
-      if (createEmployee.fulfilled.match(result)) {
-        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-        toast.success('Employee added successfully');
-        resetCreateForm();
-        Keyboard.dismiss();
-        setTimeout(() => setShowCreateSheet(false), 250);
-        dispatch(fetchEmployees());
-      } else {
-        const errorMsg = (result.payload as string) || 'Failed to add employee';
-        toast.error(errorMsg);
-      }
-    } catch {
-      toast.error('An error occurred');
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
 
   const onEditSubmit = async (data: UpdateEmployeeFormData) => {
     if (!selectedEmployee) return;
@@ -223,7 +200,7 @@ export default function EmployeesScreen() {
 
   return (
     <View style={[styles.container, { backgroundColor: themeColors.background }]}>
-      <GradientHeader title="Employees" subtitle="Track team progress" />
+      <Header title="Employees" />
 
       <ScrollView
         style={styles.content}
@@ -256,19 +233,12 @@ export default function EmployeesScreen() {
       <View style={styles.fabContainer}>
         <TouchableOpacity
           onPress={() => {
-            resetCreateForm();
-            setShowCreateSheet(true);
+            router.push('/(admin)/employees/create');
           }}
           activeOpacity={0.8}
+          style={[styles.fabButton, { backgroundColor: isDark ? colors.white : colors.neutral[900] }]}
         >
-          <LinearGradient
-            colors={colors.primary.gradient as unknown as [string, string]}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 1 }}
-            style={styles.fabButton}
-          >
-            <Text style={styles.fabIcon}>+</Text>
-          </LinearGradient>
+          <Text style={[styles.fabIcon, { color: isDark ? colors.neutral[900] : colors.white }]}>+</Text>
         </TouchableOpacity>
       </View>
 
@@ -394,157 +364,7 @@ export default function EmployeesScreen() {
         </View>
       </Modal>
 
-      {/* Add Employee Form Bottom Sheet */}
-      <Modal
-        isVisible={showCreateSheet}
-        onBackdropPress={() => {
-          if (!isSubmitting) {
-            Keyboard.dismiss();
-            setTimeout(() => setShowCreateSheet(false), 250);
-          }
-        }}
-        backdropOpacity={0.5}
-        style={styles.bottomSheet}
-        avoidKeyboard={false}
-        useNativeDriver={true}
-        hideModalContentWhileAnimating={true}
-        backdropTransitionOutTiming={0}
-      >
-        <KeyboardAvoidingView
-          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-          style={{ width: '100%' }}
-        >
-          <View style={[styles.bottomSheetContent, { paddingHorizontal: 0 }]}>
-            <View style={styles.dragHandle} />
-            <Text style={[styles.bottomSheetTitle, { marginBottom: 12 }]}>Add Employee</Text>
 
-            <ScrollView
-              showsVerticalScrollIndicator={false}
-              contentContainerStyle={{ paddingHorizontal: spacing.xl, paddingBottom: spacing['4xl'] }}
-              keyboardShouldPersistTaps="handled"
-              style={{ maxHeight: Dimensions.get('window').height * 0.65 }}
-            >
-              <Controller
-                control={createControl}
-                name="name"
-                render={({ field: { onChange, onBlur, value } }) => (
-                  <Input
-                    label="Full Name *"
-                    leftIcon="user"
-                    value={value}
-                    onChangeText={onChange}
-                    onBlur={onBlur}
-                    error={createErrors.name?.message}
-                  />
-                )}
-              />
-
-              <Controller
-                control={createControl}
-                name="email"
-                render={({ field: { onChange, onBlur, value } }) => (
-                  <Input
-                    label="Email Address *"
-                    leftIcon="email"
-                    value={value}
-                    onChangeText={onChange}
-                    onBlur={onBlur}
-                    error={createErrors.email?.message}
-                    keyboardType="email-address"
-                    autoCapitalize="none"
-                  />
-                )}
-              />
-
-              <Controller
-                control={createControl}
-                name="department"
-                render={({ field: { onChange, onBlur, value } }) => (
-                  <Input
-                    label="Department (Optional)"
-                    leftIcon="building"
-                    value={value}
-                    onChangeText={onChange}
-                    onBlur={onBlur}
-                    error={createErrors.department?.message}
-                  />
-                )}
-              />
-
-              <Controller
-                control={createControl}
-                name="phone"
-                render={({ field: { onChange, onBlur, value } }) => (
-                  <Input
-                    label="Phone Number (Optional)"
-                    leftIcon="phone"
-                    value={value}
-                    onChangeText={onChange}
-                    onBlur={onBlur}
-                    error={createErrors.phone?.message}
-                    keyboardType="phone-pad"
-                  />
-                )}
-              />
-
-              <Controller
-                control={createControl}
-                name="password"
-                render={({ field: { onChange, onBlur, value } }) => (
-                  <Input
-                    label="Password *"
-                    leftIcon="lock"
-                    value={value}
-                    onChangeText={onChange}
-                    onBlur={onBlur}
-                    error={createErrors.password?.message}
-                    secureTextEntry
-                    showPasswordToggle
-                  />
-                )}
-              />
-
-              <Controller
-                control={createControl}
-                name="confirmPassword"
-                render={({ field: { onChange, onBlur, value } }) => (
-                  <Input
-                    label="Confirm Password *"
-                    leftIcon="lock"
-                    value={value}
-                    onChangeText={onChange}
-                    onBlur={onBlur}
-                    error={createErrors.confirmPassword?.message}
-                    secureTextEntry
-                    showPasswordToggle
-                  />
-                )}
-              />
-
-              <View style={styles.bottomSheetButtons}>
-                <View style={{ flex: 1 }}>
-                  <Button
-                    title="Cancel"
-                    variant="ghost"
-                    onPress={() => {
-                      Keyboard.dismiss();
-                      setTimeout(() => setShowCreateSheet(false), 250);
-                    }}
-                    disabled={isSubmitting}
-                  />
-                </View>
-                <View style={{ flex: 1 }}>
-                  <Button
-                    title="Create"
-                    onPress={handleCreateSubmit(onCreateSubmit)}
-                    isLoading={isSubmitting}
-                  />
-                </View>
-              </View>
-            </ScrollView>
-          </View>
-        </KeyboardAvoidingView>
-      </Modal>
 
       {/* Edit Employee Form Bottom Sheet */}
       <Modal
@@ -557,22 +377,22 @@ export default function EmployeesScreen() {
         }}
         backdropOpacity={0.5}
         style={styles.bottomSheet}
-        avoidKeyboard={false}
+        avoidKeyboard={true}
         useNativeDriver={true}
         hideModalContentWhileAnimating={true}
         backdropTransitionOutTiming={0}
       >
-        <KeyboardAvoidingView
-          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-          style={{ width: '100%' }}
-        >
           <View style={[styles.bottomSheetContent, { paddingHorizontal: 0 }]}>
             <View style={styles.dragHandle} />
             <Text style={[styles.bottomSheetTitle, { marginBottom: 12 }]}>Edit Employee</Text>
 
             <ScrollView
+              ref={editScrollRef}
               showsVerticalScrollIndicator={false}
-              contentContainerStyle={{ paddingHorizontal: spacing.xl, paddingBottom: spacing['4xl'] }}
+              contentContainerStyle={{
+                paddingHorizontal: spacing.xl,
+                paddingBottom: keyboardHeight > 0 ? keyboardHeight - 80 : spacing.xl,
+              }}
               keyboardShouldPersistTaps="handled"
               style={{ maxHeight: Dimensions.get('window').height * 0.65 }}
             >
@@ -649,6 +469,7 @@ export default function EmployeesScreen() {
                     value={value}
                     onChangeText={onChange}
                     onBlur={onBlur}
+                    onFocus={() => scrollToField(editScrollRef, 4)}
                     error={editErrors.password?.message}
                     secureTextEntry
                     showPasswordToggle
@@ -667,6 +488,7 @@ export default function EmployeesScreen() {
                     value={value}
                     onChangeText={onChange}
                     onBlur={onBlur}
+                    onFocus={() => scrollToField(editScrollRef, 5)}
                     error={editErrors.confirmPassword?.message}
                     secureTextEntry
                     showPasswordToggle
@@ -697,7 +519,6 @@ export default function EmployeesScreen() {
               </View>
             </ScrollView>
           </View>
-        </KeyboardAvoidingView>
       </Modal>
     </View>
   );
@@ -713,7 +534,7 @@ const getStyles = (isDark: boolean, themeColors: any) =>
     },
     contentInner: {
       padding: spacing.base,
-      paddingBottom: spacing['4xl'],
+      paddingBottom: spacing.xl,
     },
     fabContainer: {
       position: 'absolute',

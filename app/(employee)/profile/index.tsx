@@ -5,7 +5,6 @@ import {
   StyleSheet,
   ScrollView,
   KeyboardAvoidingView,
-  Platform,
   TouchableOpacity,
 } from 'react-native';
 import { useRouter } from 'expo-router';
@@ -13,7 +12,7 @@ import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as Haptics from 'expo-haptics';
 import Modal from 'react-native-modal';
-import GradientHeader from '../../../src/components/ui/GradientHeader';
+import Header from '../../../src/components/ui/Header';
 import Avatar from '../../../src/components/ui/Avatar';
 import Input from '../../../src/components/ui/Input';
 import Button from '../../../src/components/ui/Button';
@@ -75,16 +74,18 @@ export default function ProfileScreen() {
   }, [dispatch, router]);
 
   return (
-    <KeyboardAvoidingView
-      style={styles.container}
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-    >
+    <View style={styles.container}>
+      <Header title="My Profile" />
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
+        behavior="padding"
+        keyboardVerticalOffset={0}
+      >
       <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.scrollContent}
         keyboardShouldPersistTaps="handled"
       >
-        <GradientHeader title="My Profile" subtitle="Manage personal settings" />
 
         {/* Profile Section */}
         <View style={styles.profileSection}>
@@ -213,6 +214,7 @@ export default function ProfileScreen() {
           />
         </View>
       </ScrollView>
+      </KeyboardAvoidingView>
 
       {/* Logout Confirmation Modal */}
       <Modal
@@ -237,6 +239,7 @@ export default function ProfileScreen() {
                 variant="ghost"
                 onPress={() => setShowLogoutModal(false)}
                 size="md"
+                style={{ borderWidth: 1.2, borderColor: themeColors.border }}
               />
             </View>
             <View style={{ flex: 1 }}>
@@ -250,14 +253,14 @@ export default function ProfileScreen() {
           </View>
         </View>
       </Modal>
-    </KeyboardAvoidingView>
+    </View>
   );
 }
 
 const getStyles = (isDark: boolean, themeColors: any) =>
   StyleSheet.create({
-    container: { flex: 1, backgroundColor: themeColors.background },
-    scrollContent: { paddingBottom: spacing['4xl'] },
+    container: { flex: 1, backgroundColor: themeColors.background, overflow: 'hidden' },
+    scrollContent: { paddingBottom: spacing.xl },
     profileSection: {
       alignItems: 'center', paddingVertical: spacing.xl, gap: spacing.sm,
     },

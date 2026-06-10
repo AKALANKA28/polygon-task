@@ -30,12 +30,20 @@ async function initDb() {
       CREATE TABLE IF NOT EXISTS task_assignees (
         task_id INT NOT NULL,
         user_id INT NOT NULL,
+        subtask VARCHAR(500) DEFAULT NULL,
         PRIMARY KEY (task_id, user_id),
         FOREIGN KEY (task_id) REFERENCES tasks(id) ON DELETE CASCADE,
         FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
       )
     `);
     console.log('Database task_assignees table checked/created successfully');
+
+    try {
+      await pool.query('ALTER TABLE task_assignees ADD COLUMN subtask VARCHAR(500) DEFAULT NULL');
+      console.log('Successfully checked/added subtask column to task_assignees.');
+    } catch (err) {
+      // Ignore if column already exists
+    }
 
     // Migrate existing assignments from tasks.assigned_to to task_assignees if table is empty
     const [assigneeCountRows] = await pool.query('SELECT COUNT(*) as count FROM task_assignees');

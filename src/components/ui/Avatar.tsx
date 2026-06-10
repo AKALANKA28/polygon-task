@@ -1,14 +1,16 @@
 import React, { useMemo } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { colors } from '../../theme/colors';
-import { typography } from '../../theme/typography';
+import { SvgXml } from 'react-native-svg';
+import { Avatar as DiceBearAvatar } from '@dicebear/core';
+// @ts-ignore
+import lorelei from '@dicebear/styles/dist/lorelei.min.json';
 import { normalize } from '../../utils/responsive';
 
 interface AvatarProps {
   name: string;
   size?: number;
-  fontSize?: number;
+  fontSize?: number; // Kept for backwards compatibility
 }
 
 const AVATAR_GRADIENTS = [
@@ -19,16 +21,7 @@ const AVATAR_GRADIENTS = [
   ['#FF3D00', '#FFB800'], // Red to Amber
 ];
 
-export default function Avatar({ name, size = 40, fontSize }: AvatarProps) {
-  const initials = useMemo(() => {
-    if (!name) return 'U';
-    const parts = name.trim().split(/\s+/);
-    if (parts.length >= 2) {
-      return `${parts[0][0]}${parts[1][0]}`.toUpperCase();
-    }
-    return parts[0].substring(0, Math.min(2, parts[0].length)).toUpperCase();
-  }, [name]);
-
+export default function Avatar({ name, size = 40 }: AvatarProps) {
   const gradientColors = useMemo(() => {
     if (!name) return AVATAR_GRADIENTS[0];
     let hash = 0;
@@ -40,7 +33,14 @@ export default function Avatar({ name, size = 40, fontSize }: AvatarProps) {
   }, [name]);
 
   const normalizedSize = normalize(size);
-  const calculatedFontSize = fontSize ? normalize(fontSize) : Math.max(8, Math.floor(normalizedSize * 0.4));
+
+  const svgXml = useMemo(() => {
+    // Generate deterministic avatar using the name/seed
+    const avatar = new DiceBearAvatar(lorelei as any, {
+      seed: name,
+    });
+    return avatar.toString();
+  }, [name]);
 
   return (
     <View style={[styles.container, { width: normalizedSize, height: normalizedSize, borderRadius: normalizedSize / 2 }]}>
@@ -50,9 +50,7 @@ export default function Avatar({ name, size = 40, fontSize }: AvatarProps) {
         end={{ x: 1, y: 1 }}
         style={styles.gradient}
       >
-        <Text style={[styles.text, { fontSize: calculatedFontSize }]}>
-          {initials}
-        </Text>
+        <SvgXml xml={svgXml} width={normalizedSize} height={normalizedSize} />
       </LinearGradient>
     </View>
   );
@@ -69,10 +67,5 @@ const styles = StyleSheet.create({
     height: '100%',
     justifyContent: 'center',
     alignItems: 'center',
-  },
-  text: {
-    fontFamily: typography.fonts.bold,
-    color: colors.white,
-    textTransform: 'uppercase',
   },
 });

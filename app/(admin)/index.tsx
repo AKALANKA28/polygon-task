@@ -11,8 +11,6 @@ import {
   FlatList,
   ActivityIndicator,
   Keyboard,
-  Platform,
-  KeyboardAvoidingView,
 } from 'react-native';
 import Animated, {
   useSharedValue,
@@ -30,7 +28,7 @@ import Svg, { Path } from 'react-native-svg';
 import Modal from 'react-native-modal';
 import * as Haptics from 'expo-haptics';
 
-import GradientHeader from '../../src/components/ui/GradientHeader';
+import Header from '../../src/components/ui/Header';
 import TaskCard from '../../src/components/task/TaskCard';
 import FeaturedTaskCard from '../../src/components/task/FeaturedTaskCard';
 import Skeleton from '../../src/components/ui/Skeleton';
@@ -150,23 +148,6 @@ export default function AdminDashboard() {
 
   // Bottom Sheets State
   const [showLogoutSheet, setShowLogoutSheet] = useState(false);
-  const [showCreateSheet, setShowCreateSheet] = useState(false);
-
-  // Create Task Form State
-  const [taskTitle, setTaskTitle] = useState('');
-  const [taskDesc, setTaskDesc] = useState('');
-  const [taskProject, setTaskProject] = useState('');
-  const [taskPriority, setTaskPriority] = useState<'low' | 'medium' | 'high'>('medium');
-  const [selectedDate, setSelectedDate] = useState<Date>(new Date(Date.now() + 86400000)); // Default tomorrow
-  const [selectedEmployeeIds, setSelectedEmployeeIds] = useState<number[]>([]);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-
-  // Selector Overlay modals inside sheet
-  const [showCalendarModal, setShowCalendarModal] = useState(false);
-  const [showEmployeeModal, setShowEmployeeModal] = useState(false);
-  
-  // Custom Inline Calendar Date Tracker
-  const [calendarDate, setCalendarDate] = useState<Date>(new Date());
 
   // FAB animation
   const fabTranslateY = useSharedValue(80);
@@ -216,105 +197,7 @@ export default function AdminDashboard() {
     [router]
   );
 
-  // Create Task Submission
-  const handleCreateTask = useCallback(async () => {
-    if (!taskTitle.trim()) {
-      toast.error('Task Title is required');
-      return;
-    }
-    if (selectedEmployeeIds.length === 0) {
-      toast.error('Please assign to at least one employee');
-      return;
-    }
-
-    setIsSubmitting(true);
-    try {
-      // Append project to description if present
-      const fullDescription = taskProject.trim()
-        ? `[Project: ${taskProject.trim()}] ${taskDesc.trim()}`
-        : taskDesc.trim();
-
-      // Formatted due date string (YYYY-MM-DD)
-      const formattedDueDateStr = selectedDate.toISOString().split('T')[0];
-
-      const result = await dispatch(createTask({
-        title: taskTitle.trim(),
-        description: fullDescription || undefined,
-        priority: taskPriority,
-        assigned_to: selectedEmployeeIds,
-        due_date: formattedDueDateStr,
-      }));
-
-      if (createTask.fulfilled.match(result)) {
-        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-        toast.success('Task created successfully!');
-        
-        // Reset states and close modal
-        setTaskTitle('');
-        setTaskDesc('');
-        setTaskProject('');
-        setTaskPriority('medium');
-        setSelectedDate(new Date(Date.now() + 86400000));
-        setSelectedEmployeeIds([]);
-        Keyboard.dismiss();
-        setTimeout(() => {
-          setShowCreateSheet(false);
-        }, 250);
-        dispatch(fetchTaskStats());
-      } else {
-        toast.error('Failed to create task');
-      }
-    } catch (err) {
-      toast.error('An error occurred');
-    } finally {
-      setIsSubmitting(false);
-    }
-  }, [taskTitle, taskDesc, taskProject, taskPriority, selectedDate, selectedEmployeeIds, dispatch]);
-
   const greeting = useMemo(() => getGreeting(), []);
-
-  // Calendar Helpers
-  const calendarDays = useMemo(() => {
-    const year = calendarDate.getFullYear();
-    const month = calendarDate.getMonth();
-    const daysInMonth = new Date(year, month + 1, 0).getDate();
-    const firstDayIndex = new Date(year, month, 1).getDay(); // Sunday is 0
-    
-    const days: (number | null)[] = [];
-    for (let i = 0; i < firstDayIndex; i++) {
-      days.push(null);
-    }
-    for (let i = 1; i <= daysInMonth; i++) {
-      days.push(i);
-    }
-    return days;
-  }, [calendarDate]);
-
-  const isSameDay = (d1: Date, d2: Date) => {
-    return d1.getFullYear() === d2.getFullYear() &&
-           d1.getMonth() === d2.getMonth() &&
-           d1.getDate() === d2.getDate();
-  };
-
-  const handlePrevMonth = () => {
-    setCalendarDate(new Date(calendarDate.getFullYear(), calendarDate.getMonth() - 1, 1));
-  };
-  
-  const handleNextMonth = () => {
-    setCalendarDate(new Date(calendarDate.getFullYear(), calendarDate.getMonth() + 1, 1));
-  };
-
-  const selectedEmployees = useMemo(() => {
-    return employees.filter(e => selectedEmployeeIds.includes(e.id));
-  }, [employees, selectedEmployeeIds]);
-
-  const toggleEmployeeSelection = (employeeId: number) => {
-    setSelectedEmployeeIds(prev => 
-      prev.includes(employeeId) 
-        ? prev.filter(id => id !== employeeId) 
-        : [...prev, employeeId]
-    );
-  };
 
   return (
     <View style={styles.container}>
@@ -330,9 +213,7 @@ export default function AdminDashboard() {
         }
       >
         {/* Compact Adaptive Header */}
-        <GradientHeader
-          height={120}
-          usePrimaryGradient={true}
+        <Header
           leftContent={
             <View>
               <Text style={styles.greetingText}>{greeting}</Text>
@@ -342,7 +223,7 @@ export default function AdminDashboard() {
           rightContent={
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 14 }}>
               <TouchableOpacity onPress={toggleTheme} activeOpacity={0.7} style={styles.themeButton}>
-                <Svg width={normalize(20)} height={normalize(20)} viewBox="0 0 24 24" fill="none" stroke={colors.white} strokeWidth={2}>
+                <Svg width={normalize(20)} height={normalize(20)} viewBox="0 0 24 24" fill="none" stroke={themeColors.text} strokeWidth={2}>
                   {isDark ? (
                     <Path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42M12 7a5 5 0 100 10 5 5 0 000-10z" strokeLinecap="round" strokeLinejoin="round" />
                   ) : (
@@ -411,13 +292,13 @@ export default function AdminDashboard() {
             <EmptyState title="No tasks for today" subtitle="Enjoy your day!" />
           )}
 
-          <View style={{ height: 100 }} />
+          <View style={{ height: spacing.xl }} />
         </View>
       </ScrollView>
 
       {/* FAB - Premium Rounded Square */}
       <Animated.View style={[styles.fab, fabStyle]}>
-        <TouchableOpacity onPress={() => setShowCreateSheet(true)} activeOpacity={0.9}>
+        <TouchableOpacity onPress={() => router.push('/(admin)/tasks/create')} activeOpacity={0.9}>
           <View style={[styles.fabButton, { backgroundColor: isDark ? colors.white : colors.neutral[900] }]}>
             <Text style={[styles.fabIcon, { color: isDark ? colors.black : colors.white }]}>+</Text>
           </View>
@@ -442,7 +323,7 @@ export default function AdminDashboard() {
           <Text style={styles.bottomSheetMessage}>Are you sure you want to sign out of your account?</Text>
           <View style={styles.bottomSheetButtons}>
             <View style={{ flex: 1 }}>
-              <Button title="Cancel" variant="ghost" onPress={() => setShowLogoutSheet(false)} />
+              <Button title="Cancel" variant="ghost" onPress={() => setShowLogoutSheet(false)} style={{ borderWidth: 1.2, borderColor: themeColors.border }} />
             </View>
             <View style={{ flex: 1 }}>
               <Button title="Sign Out" variant="danger" onPress={confirmLogout} />
@@ -451,333 +332,7 @@ export default function AdminDashboard() {
         </View>
       </Modal>
 
-      {/* Create Task Bottom Sheet */}
-      <Modal
-        isVisible={showCreateSheet}
-        onBackdropPress={() => {
-          if (!isSubmitting) {
-            Keyboard.dismiss();
-            setTimeout(() => {
-              setShowCreateSheet(false);
-            }, 250);
-          }
-        }}
-        backdropOpacity={0.5}
-        style={styles.bottomSheet}
-        avoidKeyboard={false}
-        animationIn="slideInUp"
-        animationOut="slideOutDown"
-        useNativeDriver={true}
-        hideModalContentWhileAnimating={true}
-        backdropTransitionOutTiming={0}
-      >
-        <KeyboardAvoidingView
-          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-          style={{ width: '100%' }}
-        >
-          <View style={[styles.bottomSheetContent, { paddingHorizontal: 0 }]}>
-          <View style={styles.dragHandle} />
-          <Text style={[styles.bottomSheetTitle, { marginBottom: 12 }]}>Create Task</Text>
 
-          <ScrollView
-            showsVerticalScrollIndicator={false}
-            contentContainerStyle={{ paddingHorizontal: spacing.xl, paddingBottom: spacing.md }}
-            keyboardShouldPersistTaps="handled"
-          >
-            {/* Title Input */}
-            <View style={styles.sheetInputRow}>
-              <TextInput
-                style={styles.sheetTextInputTitle}
-                placeholder="Task Title"
-                placeholderTextColor={isDark ? colors.neutral[600] : colors.neutral[400]}
-                value={taskTitle}
-                onChangeText={setTaskTitle}
-                maxLength={200}
-              />
-            </View>
-
-            {/* Description Row Container */}
-            <View style={styles.rowContainer}>
-              <View style={styles.rowPlusCircle}>
-                <Text style={styles.rowPlusText}>+</Text>
-              </View>
-              <TextInput
-                style={styles.rowTextInput}
-                placeholder="Add Description"
-                placeholderTextColor={isDark ? colors.neutral[500] : colors.neutral[400]}
-                value={taskDesc}
-                onChangeText={setTaskDesc}
-                multiline
-              />
-            </View>
-
-            {/* Date and Priority row */}
-            <View style={styles.gridRow}>
-              {/* Date Column */}
-              <TouchableOpacity
-                style={styles.gridCell}
-                activeOpacity={0.8}
-                onPress={() => {
-                  setCalendarDate(new Date());
-                  setShowCalendarModal(true);
-                }}
-              >
-                <View style={styles.gridCellIconWrapper}>
-                  <Svg width={normalize(16)} height={normalize(16)} viewBox="0 0 24 24" fill="none" stroke={themeColors.textSecondary} strokeWidth={2}>
-                    <Path d="M19 4H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2z" strokeLinecap="round" strokeLinejoin="round" />
-                    <Path d="M16 2v4M8 2v4M3 10h18" strokeLinecap="round" strokeLinejoin="round" />
-                  </Svg>
-                </View>
-                <View style={styles.gridCellTextWrapper}>
-                  <Text style={styles.gridCellLabel}>Date</Text>
-                  <Text style={styles.gridCellValue} numberOfLines={1}>
-                    {selectedDate.toLocaleDateString('en-US', { day: 'numeric', month: 'short' })}
-                  </Text>
-                </View>
-              </TouchableOpacity>
- 
-              {/* Priority Column */}
-              <View style={styles.gridCell}>
-                <View style={styles.gridCellIconWrapper}>
-                  <Svg width={normalize(16)} height={normalize(16)} viewBox="0 0 24 24" fill="none" stroke={themeColors.textSecondary} strokeWidth={2}>
-                    <Path d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" strokeLinecap="round" strokeLinejoin="round" />
-                  </Svg>
-                </View>
-                <View style={{ flex: 1 }}>
-                  <Text style={styles.gridCellLabel}>Priority</Text>
-                  <View style={styles.prioritySelectorInline}>
-                    {(['low', 'medium', 'high'] as const).map(p => (
-                      <TouchableOpacity
-                        key={p}
-                        style={[
-                          styles.priorityOptionInline,
-                          taskPriority === p && { backgroundColor: colors.brand.purple }
-                        ]}
-                        onPress={() => setTaskPriority(p)}
-                      >
-                        <Text style={[
-                          styles.priorityOptionTextInline,
-                          { color: taskPriority === p ? colors.white : themeColors.text }
-                        ]}>
-                          {p.charAt(0).toUpperCase()}
-                        </Text>
-                      </TouchableOpacity>
-                    ))}
-                  </View>
-                </View>
-              </View>
-            </View>
-
-            {/* Add Project Row Container */}
-            <View style={styles.rowContainer}>
-              <View style={styles.rowPlusCircle}>
-                <Text style={styles.rowPlusText}>+</Text>
-              </View>
-              <TextInput
-                style={styles.rowTextInput}
-                placeholder="Add Project"
-                placeholderTextColor={isDark ? colors.neutral[500] : colors.neutral[400]}
-                value={taskProject}
-                onChangeText={setTaskProject}
-              />
-            </View>
-
-            {/* Add People Row Container */}
-            <TouchableOpacity
-              style={styles.rowContainer}
-              activeOpacity={0.8}
-              onPress={() => setShowEmployeeModal(true)}
-            >
-              <View style={styles.rowPlusCircle}>
-                <Text style={styles.rowPlusText}>+</Text>
-              </View>
-              <View style={{ flex: 1, justifyContent: 'center' }}>
-                <Text style={styles.rowPlaceholderText}>
-                  {selectedEmployeeIds.length > 0
-                    ? `${selectedEmployeeIds.length} People Assigned`
-                    : 'Add People'}
-                </Text>
-              </View>
-              <Svg width={normalize(16)} height={normalize(16)} viewBox="0 0 24 24" fill="none" stroke={themeColors.textSecondary} strokeWidth={2}>
-                <Path d="M9 5l7 7-7 7" strokeLinecap="round" strokeLinejoin="round" />
-              </Svg>
-            </TouchableOpacity>
-
-            {/* Selected Assignees List */}
-            {selectedEmployees.length > 0 && (
-              <View style={styles.assigneeListContainer}>
-                <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: spacing.sm }}>
-                  {selectedEmployees.map((emp) => (
-                    <View key={emp.id} style={styles.assigneeChip}>
-                      <Avatar name={emp.name} size={20} />
-                      <Text style={styles.assigneeChipText} numberOfLines={1}>{emp.name.split(' ')[0]}</Text>
-                      <TouchableOpacity
-                        onPress={() => toggleEmployeeSelection(emp.id)}
-                        style={styles.removeAssigneeButton}
-                      >
-                        <Text style={{ color: colors.semantic.error, fontSize: 10, fontWeight: 'bold' }}>✕</Text>
-                      </TouchableOpacity>
-                    </View>
-                  ))}
-                </ScrollView>
-              </View>
-            )}
-
-            {/* Action Buttons */}
-            <View style={styles.bottomSheetButtons}>
-              <View style={{ flex: 1 }}>
-                <Button
-                  title="Cancel"
-                  variant="ghost"
-                  onPress={() => {
-                    Keyboard.dismiss();
-                    setTimeout(() => {
-                      setShowCreateSheet(false);
-                    }, 250);
-                  }}
-                  disabled={isSubmitting}
-                />
-              </View>
-              <View style={{ flex: 1 }}>
-                {isSubmitting ? (
-                  <View style={styles.submitLoader}>
-                    <ActivityIndicator size="small" color={colors.white} />
-                  </View>
-                ) : (
-                  <Button
-                    title="Create"
-                    onPress={handleCreateTask}
-                  />
-                )}
-              </View>
-            </View>
-          </ScrollView>
-        </View>
-        </KeyboardAvoidingView>
-      </Modal>
-
-      {/* Date Picker Modal (Custom Calendar Overlay) */}
-      <Modal
-        isVisible={showCalendarModal}
-        onBackdropPress={() => setShowCalendarModal(false)}
-        backdropOpacity={0.4}
-        animationIn="fadeIn"
-        animationOut="fadeOut"
-        style={styles.centerModal}
-        useNativeDriver={true}
-        hideModalContentWhileAnimating={true}
-        backdropTransitionOutTiming={0}
-      >
-        <View style={styles.calendarModalContent}>
-          <View style={styles.calendarHeader}>
-            <TouchableOpacity onPress={handlePrevMonth} style={styles.calendarNavBtn}>
-              <Text style={{ fontSize: 18, color: colors.brand.purple }}>◀</Text>
-            </TouchableOpacity>
-            <Text style={styles.calendarMonthTitle}>
-              {calendarDate.toLocaleString('default', { month: 'long', year: 'numeric' })}
-            </Text>
-            <TouchableOpacity onPress={handleNextMonth} style={styles.calendarNavBtn}>
-              <Text style={{ fontSize: 18, color: colors.brand.purple }}>▶</Text>
-            </TouchableOpacity>
-          </View>
-          
-          {/* Days headers */}
-          <View style={styles.calendarWeekRow}>
-            {['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'].map((d) => (
-              <Text key={d} style={styles.calendarDayHeader}>{d}</Text>
-            ))}
-          </View>
-
-          {/* Days grid */}
-          <View style={styles.calendarDaysGrid}>
-            {calendarDays.map((day, idx) => {
-              const dateVal = day ? new Date(calendarDate.getFullYear(), calendarDate.getMonth(), day) : null;
-              const isSelected = dateVal ? isSameDay(dateVal, selectedDate) : false;
-              
-              return (
-                <TouchableOpacity
-                  key={idx}
-                  disabled={day === null}
-                  style={[
-                    styles.calendarDayCell,
-                    isSelected && styles.calendarDayCellSelected,
-                  ]}
-                  onPress={() => {
-                    if (dateVal) {
-                      setSelectedDate(dateVal);
-                      setShowCalendarModal(false);
-                    }
-                  }}
-                >
-                  <Text style={[
-                    styles.calendarDayText,
-                    isSelected && styles.calendarDayTextSelected,
-                    day === null && { opacity: 0 }
-                  ]}>
-                    {day}
-                  </Text>
-                </TouchableOpacity>
-              );
-            })}
-          </View>
-
-          <Button title="Close" variant="ghost" size="sm" onPress={() => setShowCalendarModal(false)} />
-        </View>
-      </Modal>
-
-      {/* Employee Picker Modal (Multi-Select) */}
-      <Modal
-        isVisible={showEmployeeModal}
-        onBackdropPress={() => setShowEmployeeModal(false)}
-        backdropOpacity={0.4}
-        animationIn="slideInUp"
-        animationOut="slideOutDown"
-        style={styles.bottomSheet}
-        useNativeDriver={true}
-        hideModalContentWhileAnimating={true}
-        backdropTransitionOutTiming={0}
-      >
-        <View style={styles.bottomSheetContent}>
-          <View style={styles.dragHandle} />
-          <View style={styles.modalHeaderRow}>
-            <Text style={styles.bottomSheetTitle}>Assign Employees</Text>
-            <TouchableOpacity onPress={() => setShowEmployeeModal(false)}>
-              <Text style={{ color: colors.brand.purple, fontFamily: typography.fonts.semiBold }}>Done</Text>
-            </TouchableOpacity>
-          </View>
-
-          <FlatList
-            data={employees}
-            keyExtractor={(item) => String(item.id)}
-            showsVerticalScrollIndicator={false}
-            style={{ maxHeight: 300, marginBottom: spacing.md }}
-            renderItem={({ item }) => {
-              const isSelected = selectedEmployeeIds.includes(item.id);
-              return (
-                <TouchableOpacity
-                  style={styles.employeeSelectRow}
-                  activeOpacity={0.7}
-                  onPress={() => toggleEmployeeSelection(item.id)}
-                >
-                  <Avatar name={item.name} size={36} />
-                  <View style={{ flex: 1, marginLeft: spacing.md }}>
-                    <Text style={[styles.employeeSelectName, { color: themeColors.text }]}>{item.name}</Text>
-                    <Text style={{ color: themeColors.textSecondary, fontSize: 12 }}>{item.department || 'Employee'}</Text>
-                  </View>
-                  <View style={[
-                    styles.checkbox,
-                    isSelected && { backgroundColor: colors.brand.purple, borderColor: colors.brand.purple }
-                  ]}>
-                    {isSelected && (
-                      <Text style={{ color: colors.white, fontSize: 10, fontWeight: 'bold' }}>✓</Text>
-                    )}
-                  </View>
-                </TouchableOpacity>
-              );
-            }}
-          />
-        </View>
-      </Modal>
     </View>
   );
 }
@@ -824,12 +379,12 @@ const getStyles = (isDark: boolean, themeColors: any) => StyleSheet.create({
   greetingText: {
     fontFamily: typography.fonts.regular,
     fontSize: typography.sizes.base,
-    color: 'rgba(255, 255, 255, 0.75)',
+    color: themeColors.textSecondary,
   },
   nameText: {
     fontFamily: typography.fonts.bold,
     fontSize: normalize(22),
-    color: colors.white,
+    color: themeColors.text,
     marginTop: normalize(2),
   },
   themeButton: {
