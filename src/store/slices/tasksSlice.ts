@@ -1,4 +1,4 @@
-import { createSlice, createAsyncThunk, createSelector, PayloadAction } from '@reduxjs/toolkit';
+import { createSlice, createAsyncThunk, createSelector, PayloadAction, current } from '@reduxjs/toolkit';
 import NetInfo from '@react-native-community/netinfo';
 import { taskService } from '../../services/taskService';
 import { storage } from '../../utils/storage';
@@ -50,6 +50,15 @@ const saveTasksCache = async (items: Task[], stats: TaskStats | null, offlineQue
   } catch (e) {
     console.error('[saveTasksCache] Error saving tasks cache:', e);
   }
+};
+
+const saveTasksCacheFromDraft = (state: TasksState) => {
+  const plainState = current(state);
+  saveTasksCache(
+    plainState.items,
+    plainState.stats,
+    plainState.offlineQueue
+  );
 };
 
 export const restoreTasksCache = createAsyncThunk('tasks/restoreCache', async () => {
@@ -234,7 +243,7 @@ const tasksSlice = createSlice({
         state.isRefreshing = false;
         state.items = action.payload;
         state.error = null;
-        saveTasksCache(state.items, state.stats, state.offlineQueue);
+        saveTasksCacheFromDraft(state);
       })
       .addCase(fetchTasks.rejected, (state, action) => {
         state.isLoading = false;
@@ -255,7 +264,7 @@ const tasksSlice = createSlice({
             tempId: task.id,
           });
         }
-        saveTasksCache(state.items, state.stats, state.offlineQueue);
+        saveTasksCacheFromDraft(state);
       })
       .addCase(updateTask.fulfilled, (state, action) => {
         const { isOffline, id, dto, task } = action.payload as any;
@@ -289,7 +298,7 @@ const tasksSlice = createSlice({
             state.selectedTask = task;
           }
         }
-        saveTasksCache(state.items, state.stats, state.offlineQueue);
+        saveTasksCacheFromDraft(state);
       })
       .addCase(deleteTask.fulfilled, (state, action) => {
         const { id, isOffline } = action.payload;
@@ -310,15 +319,15 @@ const tasksSlice = createSlice({
             });
           }
         }
-        saveTasksCache(state.items, state.stats, state.offlineQueue);
+        saveTasksCacheFromDraft(state);
       })
       .addCase(fetchTaskStats.fulfilled, (state, action) => {
         state.stats = action.payload;
-        saveTasksCache(state.items, state.stats, state.offlineQueue);
+        saveTasksCacheFromDraft(state);
       })
       .addCase(processOfflineSync.fulfilled, (state) => {
         state.offlineQueue = [];
-        saveTasksCache(state.items, state.stats, state.offlineQueue);
+        saveTasksCacheFromDraft(state);
       });
   },
 });

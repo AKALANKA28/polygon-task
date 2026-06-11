@@ -64,11 +64,17 @@ export default function Button({
 
   // Determine styles based on variant
   const getVariantStyles = () => {
+    const isButtonDisabled = disabled; // Only style as disabled when explicitly disabled (not just loading)
     switch (variant) {
       case 'danger':
         return {
-          container: [styles.dangerContainer, buttonDisabled && (isDark ? styles.disabledContainerDark : styles.disabledContainerLight)],
-          text: styles.dangerText,
+          container: [
+            styles.dangerContainer,
+            isButtonDisabled && (isDark ? styles.disabledContainerDark : styles.disabledContainerLight),
+            isLoading && { opacity: 0.7 }
+          ],
+          textColor: colors.white,
+          disabledTextColor: isDark ? colors.neutral[600] : colors.neutral[400],
           indicatorColor: colors.white,
         };
       case 'outline':
@@ -76,18 +82,22 @@ export default function Button({
           container: [
             styles.outlineContainer,
             { borderColor: themeColors.border },
-            buttonDisabled && (isDark ? styles.disabledContainerDark : styles.disabledContainerLight)
+            isButtonDisabled && (isDark ? styles.disabledContainerDark : styles.disabledContainerLight),
+            isLoading && { opacity: 0.7 }
           ],
-          text: [styles.outlineText, { color: themeColors.text }],
+          textColor: themeColors.text,
+          disabledTextColor: isDark ? colors.neutral[600] : colors.neutral[400],
           indicatorColor: themeColors.text,
         };
       case 'ghost':
         return {
           container: [
             styles.ghostContainer,
-            buttonDisabled && (isDark ? styles.disabledContainerDark : styles.disabledContainerLight)
+            isButtonDisabled && (isDark ? styles.disabledContainerDark : styles.disabledContainerLight),
+            isLoading && { opacity: 0.7 }
           ],
-          text: [styles.ghostText, { color: themeColors.textSecondary }],
+          textColor: themeColors.textSecondary,
+          disabledTextColor: isDark ? colors.neutral[600] : colors.neutral[400],
           indicatorColor: themeColors.textSecondary,
         };
       case 'primary':
@@ -95,9 +105,11 @@ export default function Button({
         return {
           container: [
             isDark ? styles.primaryContainerDark : styles.primaryContainerLight,
-            buttonDisabled && (isDark ? styles.disabledContainerDark : styles.disabledContainerLight)
+            isButtonDisabled && (isDark ? styles.disabledContainerDark : styles.disabledContainerLight),
+            isLoading && { opacity: 0.7 }
           ],
-          text: isDark ? styles.primaryTextDark : styles.primaryTextLight,
+          textColor: isDark ? colors.neutral[900] : colors.white,
+          disabledTextColor: isDark ? colors.neutral[600] : colors.neutral[400],
           indicatorColor: isDark ? colors.neutral[900] : colors.white,
         };
     }
@@ -119,7 +131,11 @@ export default function Button({
     return (
       <View style={styles.contentContainer}>
         {icon && <View style={styles.iconContainer}>{icon}</View>}
-        <Text style={[styles.text, styles[`text_${size}`], variantStyles.text, disabled && (isDark ? styles.disabledTextDark : styles.disabledTextLight)]}>
+        <Text style={[
+          styles.text,
+          styles[`text_${size}`],
+          { color: disabled ? variantStyles.disabledTextColor : variantStyles.textColor }
+        ]}>
           {title}
         </Text>
       </View>

@@ -51,15 +51,6 @@ function AuthGuard({ children }: { children: React.ReactNode }) {
         console.log('[NetInfo] Restored connectivity. Triggering background offline sync.');
         dispatch(processOfflineSync())
           .unwrap()
-          .then(() => {
-            Toast.show({
-              type: 'success',
-              text1: 'Sync Completed',
-              text2: 'Offline updates synchronized successfully!',
-              position: 'top',
-              visibilityTime: 4000,
-            });
-          })
           .catch((err) => {
             console.error('[Offline Sync] Sync error during reconnect:', err);
           });

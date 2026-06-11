@@ -1,27 +1,19 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, useWindowDimensions } from 'react-native';
+import { View, Text, StyleSheet } from 'react-native';
 import NetInfo from '@react-native-community/netinfo';
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
   withSpring,
-  withRepeat,
-  withSequence,
-  withTiming,
 } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { colors } from '../../theme/colors';
-import { useTheme } from '../../theme/ThemeContext';
 
 export default function OfflineIndicator() {
   const [isOffline, setIsOffline] = useState(false);
   const insets = useSafeAreaInsets();
-  const { width } = useWindowDimensions();
-  const { isDark } = useTheme();
 
-  // Animation shared values
-  const translateY = useSharedValue(-100);
-  const pulseOpacity = useSharedValue(0.4);
+  // Animation shared values (start hidden above the screen)
+  const translateY = useSharedValue(-150);
 
   useEffect(() => {
     // Listen to network state changes
@@ -34,38 +26,22 @@ export default function OfflineIndicator() {
   }, []);
 
   useEffect(() => {
-    // Pulse animation for the offline dot
-    pulseOpacity.value = withRepeat(
-      withSequence(
-        withTiming(1, { duration: 800 }),
-        withTiming(0.4, { duration: 800 })
-      ),
-      -1,
-      true
-    );
-  }, [pulseOpacity]);
-
-  useEffect(() => {
     // Slide in/out transition
     if (isOffline) {
-      translateY.value = withSpring(insets.top + 12, {
-        damping: 15,
-        stiffness: 100,
+      translateY.value = withSpring(0, {
+        damping: 18,
+        stiffness: 120,
       });
     } else {
-      translateY.value = withSpring(-100, {
-        damping: 15,
-        stiffness: 100,
+      translateY.value = withSpring(-150, {
+        damping: 18,
+        stiffness: 120,
       });
     }
-  }, [isOffline, translateY, insets.top]);
+  }, [isOffline, translateY]);
 
   const animatedStyle = useAnimatedStyle(() => ({
     transform: [{ translateY: translateY.value }],
-  }));
-
-  const pulseStyle = useAnimatedStyle(() => ({
-    opacity: pulseOpacity.value,
   }));
 
   return (
@@ -73,17 +49,14 @@ export default function OfflineIndicator() {
       style={[
         styles.container,
         {
-          width: width - 32,
-          backgroundColor: isDark ? 'rgba(23, 23, 28, 0.85)' : 'rgba(255, 255, 255, 0.85)',
-          borderColor: isDark ? 'rgba(255, 107, 26, 0.3)' : 'rgba(255, 107, 26, 0.15)',
+          paddingTop: Math.max(insets.top, 10),
         },
         animatedStyle,
       ]}
     >
       <View style={styles.content}>
-        <Animated.View style={[styles.dot, pulseStyle]} />
-        <Text style={[styles.text, { color: isDark ? colors.white : colors.neutral[900] }]}>
-          Offline Mode. Changes will sync when online.
+        <Text style={styles.text}>
+          Offline Mode
         </Text>
       </View>
     </Animated.View>
@@ -93,34 +66,33 @@ export default function OfflineIndicator() {
 const styles = StyleSheet.create({
   container: {
     position: 'absolute',
-    alignSelf: 'center',
+    top: 0,
+    left: 0,
+    right: 0,
     zIndex: 9999,
-    paddingVertical: 10,
-    paddingHorizontal: 16,
-    borderRadius: 99,
-    borderWidth: 1,
+    backgroundColor: '#1E88E5', // Premium blue status indicator color
+    paddingBottom: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(255, 255, 255, 0.1)',
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.1,
-    shadowRadius: 10,
-    elevation: 5,
-    backdropFilter: 'blur(10px)', // For web support if needed
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.15,
+    shadowRadius: 4,
+    elevation: 4,
   },
   content: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  dot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: '#FF6B1A', // Orange theme accent color
-    marginRight: 10,
+    paddingHorizontal: 16,
   },
   text: {
-    fontSize: 13,
-    fontWeight: '500',
-    fontFamily: 'Poppins_500Medium',
+    color: '#FFFFFF',
+    fontSize: 12,
+    fontWeight: '600',
+    fontFamily: 'Poppins_600SemiBold',
+    letterSpacing: 0.5,
   },
 });
